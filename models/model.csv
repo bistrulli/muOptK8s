@@ -1,0 +1,11 @@
+throughput,	entry,	Browse,	7.69153853790582
+throughput,	entry,	e1,	7.691538537322952
+throughput,	entry,	e2,	7.69153854171455
+throughput,	entry,	e3,	7.691538541801993
+utilization,	proc,	ProcT1,	0.769153853732298
+utilization,	proc,	ProcT2,	0.769153854171455
+utilization,	proc,	ProcT3,	0.7691538541801993
+response time,	entry,	Browse,	1.3001300000926304
+response time,	entry,	e1,	0.30010000011538396
+response time,	entry,	e2,	0.20006000000114693
+response time,	entry,	e3,	0.10002000000000563

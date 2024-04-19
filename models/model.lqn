@@ -1,0 +1,80 @@
+G
+"Name of the model"
+0.0001
+500
+1
+0.5
+-1
+
+P 0
+p ProcClient f m 10000
+p ProcT1 f m 5
+p ProcT2 f m 5
+p ProcT3 f m 5
+#p ProcT4 f m $r4
+#p ProcT5 f m $r5
+#p ProcT6 f m $r6
+#p ProcT7 f m $r7
+#p ProcT8 f m $r8
+#p ProcT9 f m $r9
+#p ProcT10 f m 50
+-1
+
+# Tasks declaration
+T 0
+t ClientTask r Browse -1 ProcClient m 10
+t T1Task n e1 -1 ProcT1 m 10000
+t T2Task n e2 -1 ProcT2 m 10000
+t T3Task n e3 -1 ProcT3 m 10000
+#t T4Task n e4 -1 ProcT4 m 10000
+#t T5Task n e5 -1 ProcT5 m 10000
+#t T6Task n e6 -1 ProcT6 m 10000
+#t T7Task n e7 -1 ProcT7 m 10000
+#t T8Task n e8 -1 ProcT8 m 10000
+#t T9Task n e9 -1 ProcT9 m 10000
+#t T10Task n e10 -1 ProcT10 m 10000
+-1
+
+# Entries declaration
+E 0
+s Browse 1.0 -1     		    # entry BrowseEntry has time demand 1 time units
+s e1 0.1 -1
+s e2 0.1 -1
+s e3 0.1 -1
+#s e4 $e4 -1
+#s e5 $e5 -1
+#s e6 $e6 -1
+#s e7 $e7 -1
+#s e8 $e8 -1
+#s e9 $e9 -1
+#s e10 0.10 -1
+y Browse e1 1.0 -1
+y e1 e2 1.0 -1
+y e2 e3 1.0 -1
+#y e3 e4 1.0 -1
+#y e4 e5 1.0 -1
+#y e5 e6 1.0 -1
+#y e6 e7 1.0 -1
+#y e7 e8 1.0 -1
+#y e8 e9 1.0 -1
+#y e9 e10 1.0 -1
+-1
+
+# DiffLQN settings, starting with #!
+# These will be ignored by LQNS
+
+# 1. Solver settings
+#! v 1.0e5           # fast rate to approximate instantaneous events
+#! solver ode        # ODE analysis - solver sim will run simulation
+#! stoptime 100000     # integration time horizon
+#! confidence_level 0.95
+#! confidence_percent_error 1.0
+
+# 2. Output settings
+#! throughput: Browse e1 e2 e3
+#! utilization: ProcT1 ProcT2 ProcT3
+#! responsetime: Browse e1 e2 e3 
+-1
+
+# 3. Export settings
+#! export csv
