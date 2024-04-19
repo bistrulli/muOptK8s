@@ -153,7 +153,7 @@ class muOpt(object):
 				kubeproc=[]
 				for idx,r in enumerate(replicas):
 					self.logger.info(f"updating tier{idx+1} to {np.ceil(float(r))} replicas")
-					kubelog=open(Path(__file__).parent.parent.joinpath("logs").joinpath(self.name).joinpath(f"tier{idx+1}.log"),"w+")
+					kubelog=open(Path(__file__).parent.joinpath("logs").joinpath(self.name).joinpath(f"tier{idx+1}.log"),"w+")
 					kubeproc+=[subprocess.Popen(["kubectl","scale","deployment",
 									   f"spring-test-app-tier{idx+1}",f"--replicas={int(np.ceil(float(r)))}"],stdout=kubelog,stderr=kubelog)]
 					kubelog.close()
