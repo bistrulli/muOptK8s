@@ -40,6 +40,7 @@ class muOpt(object):
 	name=None
 	juliaOptPath=None
 	ctrlInterval=None
+	lastR=None
 	
 	def __init__(self,name,juliaOptPath=None,ctrlInterval=None):
 		self.name=name
@@ -49,6 +50,7 @@ class muOpt(object):
 			raise ValueError("juliaOptPath does not exsist")
 			
 		self.juliaOptPath=juliaOptPath
+		self.lastR=None
 		
 		self.initLogger()
 		self.initRedis()
@@ -108,7 +110,8 @@ class muOpt(object):
 	
 	def startJuliaOpt(self):
 		try:
-			self.optProc=subprocess.Popen(["julia",str(self.juliaOptPath),"--name",self.name],
+			self.optProc=subprocess.Popen(["julia",str(self.juliaOptPath),"--name",self.name,
+										   "--log_path","logs/%s/%s_opt.log"%(self.name,self.name)],
 										  stdout=subprocess.DEVNULL)
 			p = self.rCon.pubsub()
 			p.psubscribe("%s_strt"%(self.name))
@@ -151,8 +154,20 @@ class muOpt(object):
 				#self.logger.info(f"Updating replicas: {m['data']}")
 				replicas=m['data'].split("-")
 				kubeproc=[]
+				if(self.lastR is None):
+					self.lastR={}
 				for idx,r in enumerate(replicas):
-					self.logger.info(f"updating tier{idx+1} to {np.ceil(float(r))} replicas")
+					self.logger.info(f"updating tier{idx+1} to {float(r)} replicas")
+					if(f"tier{idx+1}" not in self.lastR):
+						self.lastR[f"tier{idx+1}"]=np.ceil(float(r))
+					else:
+						if(self.lastR[f"tier{idx+1}"]>=np.ceil(float(r))):
+							self.logger.info(f"Downscaling tier{idx+1} "+str(self.lastR[f"tier{idx+1}"])+f"->{np.ceil(float(r))}")
+						else:
+							self.logger.info(f"Upscaling tier{idx+1} "+str(self.lastR[f"tier{idx+1}"])+f"->{float(r)}")
+
+						self.lastR[f"tier{idx+1}"]=np.ceil(float(r))
+
 					kubelog=open(Path(__file__).parent.joinpath("logs").joinpath(self.name).joinpath(f"tier{idx+1}.log"),"w+")
 					kubeproc+=[subprocess.Popen(["kubectl","scale","deployment",
 									   f"spring-test-app-tier{idx+1}",f"--replicas={int(np.ceil(float(r)))}"],stdout=kubelog,stderr=kubelog)]
