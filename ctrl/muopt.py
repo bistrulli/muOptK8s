@@ -144,7 +144,16 @@ class muOpt(object):
 		finally:
 			self.srvPubSub.unsubscribe()
 			self.optProc.terminate()
-			
+	
+	def actuateKubeCtl(self,tier,R):
+		self.logger.info("Actuacting")
+		R=int(R)
+		kubelog=open(Path(__file__).parent.joinpath("logs").joinpath(self.name).joinpath(f"tier{tier}.log"),"w+")
+		kubeproc=subprocess.Popen(["kubectl","scale","deployment",f"spring-test-app-tier{tier}",f"--replicas={R}"],
+								   stdout=kubelog,stderr=kubelog)
+		kubelog.close()
+		return kubeproc
+
 	
 	def updateReplica(self,pubsub):
 		try:
@@ -160,18 +169,17 @@ class muOpt(object):
 					self.logger.info(f"updating tier{idx+1} to {float(r)} replicas")
 					if(f"tier{idx+1}" not in self.lastR):
 						self.lastR[f"tier{idx+1}"]=np.ceil(float(r))
+						kubeproc+=[self.actuateKubeCtl(idx+1,np.ceil(float(r)))]
 					else:
-						if(self.lastR[f"tier{idx+1}"]>=np.ceil(float(r))):
+						if(self.lastR[f"tier{idx+1}"]>np.ceil(float(r))):
 							self.logger.info(f"Downscaling tier{idx+1} "+str(self.lastR[f"tier{idx+1}"])+f"->{np.ceil(float(r))}")
-						else:
+							kubeproc+=[self.actuateKubeCtl(idx+1,np.ceil(float(r)))]
+						elif(self.lastR[f"tier{idx+1}"]<np.ceil(float(r))):
 							self.logger.info(f"Upscaling tier{idx+1} "+str(self.lastR[f"tier{idx+1}"])+f"->{float(r)}")
+							kubeproc+=[self.actuateKubeCtl(idx+1,np.ceil(float(r)))]
 
 						self.lastR[f"tier{idx+1}"]=np.ceil(float(r))
 
-					kubelog=open(Path(__file__).parent.joinpath("logs").joinpath(self.name).joinpath(f"tier{idx+1}.log"),"w+")
-					kubeproc+=[subprocess.Popen(["kubectl","scale","deployment",
-									   f"spring-test-app-tier{idx+1}",f"--replicas={int(np.ceil(float(r)))}"],stdout=kubelog,stderr=kubelog)]
-					kubelog.close()
 				for kproc in kubeproc:
 					kproc.wait()
 		except Exception as e:
