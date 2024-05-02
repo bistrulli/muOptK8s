@@ -7,11 +7,13 @@ s = ArgParseSettings()
     "--name"
         help = "The name of the organization"
         arg_type = String
-        required = true
+        required = false
+        default = "test"
     "--log_path"   
         help = "Logfile path"
         arg_type = String
-        required = true
+        required = false
+        default = "logs/test/test_opt.log"
 end
 parsed_args = parse_args(ARGS, s)
 name = parsed_args["name"]

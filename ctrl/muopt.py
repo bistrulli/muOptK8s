@@ -135,7 +135,7 @@ class muOpt(object):
 		try:
 			while True:
 				self.logger.info("Main Iteration")
-				u=self.getUsers()
+				u=max(self.getUsers(),1)
 				self.comunicateUsers(u)
 				time.sleep(self.ctrlInterval)
 		except Exception as e:
