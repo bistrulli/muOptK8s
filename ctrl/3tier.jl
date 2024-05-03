@@ -50,10 +50,10 @@ R=zeros(1,3)
 dimRep=1
 
 MU[1]=0.9709; #XValidate_e;
-MU[2]=33.3333;
-MU[3]=10
-MU[4]=10
-MU[5]=10
+MU[2]=100;
+MU[3]=18
+MU[4]=18
+MU[5]=18
 
 @variable(model,T[i=1:size(jump,1)]>=0)
 @variable(model,X[i=1:size(jump,2)]>=0)
