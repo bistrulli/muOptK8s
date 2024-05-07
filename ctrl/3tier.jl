@@ -34,7 +34,8 @@ model = Model(Ipopt.Optimizer)
 #set_optimizer_attribute(model, "linear_solver", "pardiso")
 set_optimizer_attribute(model, "max_iter", 100000)
 #set_optimizer_attribute(model, "tol", 10^-10)
-set_optimizer_attribute(model, "hessian_approximation", "limited-memory")
+#set_optimizer_attribute(model, "hessian_approximation", "limited-memory")
+#set_optimizer_attribute(model, "bound_relax_factor", 10^-4)
 set_optimizer_attribute(model, "print_level", 0)
         #Xb Xd Xb1 X1e  x12 x2e x23 x3e
 jump=[  -1  +1  +0  +0  +0  +0  +0  +0;
@@ -45,7 +46,7 @@ jump=[  -1  +1  +0  +0  +0  +0  +0  +0;
     ];
 
 alpha=10^-4
-maxNC=100
+#maxNC=100
 
 #params = matread(@sprintf("%s/git/nodejsMicro/src/params.mat",homedir()))
 #MU=params["MU"]
@@ -112,6 +113,8 @@ Tm5=@NLexpression(model,-(-NC[3]-X[8]+sqrt((-NC[3]+X[8])^2+alpha))/2)
 @constraint(model,E_u[3]>=(ut*MU[5]*NC[3]-T[5]))
 @constraint(model,E_u[3]>=-(ut*MU[5]*NC[3]-T[5]))
 
+@constraint(model,E_u.<=10^-4)
+
 #conn = RedisConnection()
 
 #function message_callback(msg)
@@ -136,7 +139,8 @@ subscribe(channels...; stop_fn=stop_fn, client=subscriber) do msg
         set_value(C,w)
 
         #@objective(model,Max,T[1]-sum(E_u))
-        @objective(model,Min,sum(E_u))
+        tgt=w/(1/MU[3]*3+1/MU[1]+1/MU[2])
+        @objective(model,Min,(T[1]-tgt)^2),
         global stimes=@elapsed JuMP.optimize!(model)
         global status=termination_status(model)
         if(status!=MOI.LOCALLY_SOLVED && status!=MOI.ALMOST_LOCALLY_SOLVED)
