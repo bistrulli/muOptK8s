@@ -14,10 +14,16 @@ s = ArgParseSettings()
         arg_type = String
         required = false
         default = "logs/test/test_opt.log"
+    "--ut"
+        help = "utilizzo target"
+        arg_type = Float64
+        required = false
+        default = 0.5
 end
 parsed_args = parse_args(ARGS, s)
 name = parsed_args["name"]
 log_path = parsed_args["log_path"]
+ut=parsed_args["ut"]
 
 logger = RollingLogger(log_path, 512000, 5, Logging.Info);
 
@@ -96,15 +102,15 @@ Tm5=@NLexpression(model,-(-NC[3]-X[8]+sqrt((-NC[3]+X[8])^2+alpha))/2)
 @constraint(model,X[7]==X[8])
 
 
-@constraint(model,E_u[1]>=(0.5*MU[3]*NC[1]-T[3]))
-@constraint(model,E_u[1]>=-(0.5*MU[3]*NC[1]-T[3]))
+@constraint(model,E_u[1]>=(ut*MU[3]*NC[1]-T[3]))
+@constraint(model,E_u[1]>=-(ut*MU[3]*NC[1]-T[3]))
 
 
-@constraint(model,E_u[2]>=(0.5*MU[4]*NC[2]-T[4]))
-@constraint(model,E_u[2]>=-(0.5*MU[4]*NC[2]-T[4]))
+@constraint(model,E_u[2]>=(ut*MU[4]*NC[2]-T[4]))
+@constraint(model,E_u[2]>=-(ut*MU[4]*NC[2]-T[4]))
 
-@constraint(model,E_u[3]>=(0.5*MU[5]*NC[3]-T[5]))
-@constraint(model,E_u[3]>=-(0.5*MU[5]*NC[3]-T[5]))
+@constraint(model,E_u[3]>=(ut*MU[5]*NC[3]-T[5]))
+@constraint(model,E_u[3]>=-(ut*MU[5]*NC[3]-T[5]))
 
 #conn = RedisConnection()
 
@@ -129,7 +135,8 @@ subscribe(channels...; stop_fn=stop_fn, client=subscriber) do msg
         w=round(parse(Float64,msg[3]))
         set_value(C,w)
 
-        @objective(model,Max,T[1]-sum(E_u))
+        #@objective(model,Max,T[1]-sum(E_u))
+        @objective(model,Min,sum(E_u))
         global stimes=@elapsed JuMP.optimize!(model)
         global status=termination_status(model)
         if(status!=MOI.LOCALLY_SOLVED && status!=MOI.ALMOST_LOCALLY_SOLVED)
@@ -138,6 +145,7 @@ subscribe(channels...; stop_fn=stop_fn, client=subscriber) do msg
 
         #scendo il numero di repliche solo se occorre veramente
         slack=0
+        util=zeros(1,length(NC))
         for tier=1:length(NC)
             nR=value(NC[tier])/dimRep
             @info "tier" tier "rawReplica" nR
@@ -150,15 +158,18 @@ subscribe(channels...; stop_fn=stop_fn, client=subscriber) do msg
                 end
             elseif(R[end,tier]<ceil(nR))#upscaling
                 @info "upscaling"
-                if(nR-floor(nR)<=0.00)
-                    slack=-0.00
+                #if(nR-floor(nR)>=0.8)
+                if(false)
+                    slack=+0.21
                     logmsg=@sprintf("dovrei andare a %d invece mantengo %d",ceil(nR),ceil(nR+slack))
                     @info logmsg
                 end
             end
             global R[end,tier]=max(ceil(nR+slack),1)
+            global util[1,tier]=value(T[2+tier]/(MU[2+tier]*NC[tier]))
         end
         @info "New Replica" R[end,:]
+        @info "Util" util
         publish(@sprintf("%s_srv",name),join(R[end,:],"-"); client=redis_cli)
     end
 end

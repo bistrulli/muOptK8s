@@ -16,8 +16,11 @@ def getCli():
     parser.add_argument("-t","--wctrl", type=int, default=15,
                         help='The µOpt control period (default: 15s)',required=False)
 
-    parser.add_argument("-n","--name", type=str, default=15,
-                        help='The µOpt experiment name',required=True)
+    parser.add_argument("-n","--name", type=str, 
+    					help='The µOpt experiment name',required=True)
+
+    parser.add_argument("-ut","--utarget", type=float, default=0.5,
+                        help='The µOpt target utilization',required=False)
 
     # Add optional flag
     # parser.add_argument("-n", "--covariance", action="store_true", help="Output covariance",required=False)
@@ -41,10 +44,12 @@ class muOpt(object):
 	juliaOptPath=None
 	ctrlInterval=None
 	lastR=None
+	ut=None
 	
-	def __init__(self,name,juliaOptPath=None,ctrlInterval=None):
+	def __init__(self,name,juliaOptPath=None,ctrlInterval=None,ut=None):
 		self.name=name
 		self.ctrlInterval=ctrlInterval
+		self.ut=ut
 		if(not juliaOptPath.is_file()):
 			self.logger.error("juliaOptPath does not exsist")
 			raise ValueError("juliaOptPath does not exsist")
@@ -111,7 +116,8 @@ class muOpt(object):
 	def startJuliaOpt(self):
 		try:
 			self.optProc=subprocess.Popen(["julia",str(self.juliaOptPath),"--name",self.name,
-										   "--log_path","logs/%s/%s_opt.log"%(self.name,self.name)],
+										   "--log_path","logs/%s/%s_opt.log"%(self.name,self.name),
+										   "--ut",str(self.ut)],
 										  stdout=subprocess.DEVNULL)
 			p = self.rCon.pubsub()
 			p.psubscribe("%s_strt"%(self.name))
@@ -190,4 +196,5 @@ class muOpt(object):
 
 if __name__ == '__main__':
 	args=getCli()
-	ctrl=muOpt(name=args.name,juliaOptPath=Path(__file__).parent.joinpath("3tier.jl"),ctrlInterval=args.wctrl)
+	ctrl=muOpt(name=args.name,juliaOptPath=Path(__file__).parent.joinpath("3tier.jl"),
+			   ctrlInterval=args.wctrl,ut=args.utarget)
