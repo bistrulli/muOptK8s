@@ -162,8 +162,7 @@ subscribe(channels...; stop_fn=stop_fn, client=subscriber) do msg
                 end
             elseif(R[end,tier]<ceil(nR))#upscaling
                 @info "upscaling"
-                #if(nR-floor(nR)>=0.8)
-                if(false)
+                if(nR-floor(nR)>=0.8)
                     slack=+0.21
                     logmsg=@sprintf("dovrei andare a %d invece mantengo %d",ceil(nR),ceil(nR+slack))
                     @info logmsg
