@@ -8,6 +8,13 @@ import redis
 from threading import Thread
 import sys
 import argparse
+from kubernetes import client, config
+
+# Configure connection to Kubernetes API server
+config.load_kube_config()
+
+# Create a Kubernetes API client
+v1_api = client.AppsV1Api()
 
 
 def getCli():
@@ -152,15 +159,33 @@ class muOpt(object):
             self.srvPubSub.unsubscribe()
             self.optProc.terminate()
 
-    def actuateKubeCtl(self, tier, R):
-        self.logger.info("Actuacting")
-        R = int(R)
-        kubelog = open(Path(__file__).parent.joinpath("logs").joinpath(self.name).joinpath(f"tier{tier}.log"), "w+")
-        kubeproc = subprocess.Popen(
-            ["kubectl", "scale", "deployment", f"spring-test-app-tier{tier}", f"--replicas={R}"],
-            stdout=kubelog, stderr=kubelog)
-        kubelog.close()
-        return kubeproc
+    # def actuateKubeCtl(self, tier, R):
+    #     self.logger.info("Actuacting")
+    #     R = int(R)
+    #     kubelog = open(Path(__file__).parent.joinpath("logs").joinpath(self.name).joinpath(f"tier{tier}.log"), "w+")
+    #     kubeproc = subprocess.Popen(
+    #         ["kubectl", "scale", "deployment", f"spring-test-app-tier{tier}", f"--replicas={R}"],
+    #         stdout=kubelog, stderr=kubelog)
+    #     kubelog.close()
+    #     return kubeproc
+
+    def actuate_kubernetes_api(self, tier, R):
+        """
+        Scales the deployment of a tier to the specified R replicas.
+        """
+        deployment_name = f"spring-test-app-tier{tier}"
+
+        # Get the deployment object
+        deployment = v1_api.read_namespaced_deployment(name=deployment_name, namespace='default')
+
+        # Update and patch the deployment spec with desired replicas
+        deployment.spec.replicas = R
+        v1_api.patch_namespaced_deployment(name=deployment_name, namespace='default', body=deployment)
+
+        # Print confirmation message
+        self.logger.info(f"Deployment '{deployment_name}' scaled to {deployment.spec.replicas} replicas.")
+
+        return
 
     def updateReplica(self, pubsub):
         try:
@@ -169,28 +194,24 @@ class muOpt(object):
                     continue
                 # self.logger.info(f"Updating replicas: {m['data']}")
                 replicas = m['data'].split("-")
-                kubeproc = []
+                # kubeproc = []
                 if (self.lastR is None):
                     self.lastR = {}
                 for idx, r in enumerate(replicas):
                     self.logger.info(f"updating tier{idx + 1} to {float(r)} replicas")
                     if (f"tier{idx + 1}" not in self.lastR):
                         self.lastR[f"tier{idx + 1}"] = np.ceil(float(r))
-                        kubeproc += [self.actuateKubeCtl(idx + 1, np.ceil(float(r)))]
+                        self.actuate_kubernetes_api(idx + 1, np.ceil(float(r)))
                     else:
                         if (self.lastR[f"tier{idx + 1}"] > np.ceil(float(r))):
                             self.logger.info(f"Downscaling tier{idx + 1} " + str(
                                 self.lastR[f"tier{idx + 1}"]) + f"->{np.ceil(float(r))}")
-                            kubeproc += [self.actuateKubeCtl(idx + 1, np.ceil(float(r)))]
+                            self.actuate_kubernetes_api(idx + 1, np.ceil(float(r)))
                         elif (self.lastR[f"tier{idx + 1}"] < np.ceil(float(r))):
                             self.logger.info(
                                 f"Upscaling tier{idx + 1} " + str(self.lastR[f"tier{idx + 1}"]) + f"->{float(r)}")
-                            kubeproc += [self.actuateKubeCtl(idx + 1, np.ceil(float(r)))]
-
+                            self.actuate_kubernetes_api(idx + 1, np.ceil(float(r)))
                         self.lastR[f"tier{idx + 1}"] = np.ceil(float(r))
-
-                for kproc in kubeproc:
-                    kproc.wait()
         except Exception as e:
             self.logger.error("mainLoop failed with full error trace:")
             self.logger.error(e, exc_info=True)
