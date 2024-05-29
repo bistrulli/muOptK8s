@@ -199,11 +199,17 @@ class muOpt(object):
             deployment = v1_api.read_namespaced_deployment(name=deployment_name, namespace='default')
 
             # Update and patch the deployment spec with desired replicas
-            deployment.spec.replicas = R
+            # deployment.spec.replicas = R
+            deployment.spec.template.spec.containers[0].resources.requests['cpu'] = f"{str(R * 1000)}m"
+
             v1_api.patch_namespaced_deployment(name=deployment_name, namespace='default', body=deployment)
 
+            # Check updated value of CPU request
+            container = deployment.spec.template.spec.containers[0]
+            cpu_request = container.resources.requests.get('cpu', None)
+
             # Print confirmation message
-            self.logger.info(f"Deployment '{deployment_name}' scaled to {deployment.spec.replicas} replicas.")
+            self.logger.info(f"Deployment '{deployment_name}' scaled to {cpu_request} request.")
 
         except ApiException as e:
             if e.status == 403:
@@ -223,23 +229,25 @@ class muOpt(object):
                 # self.logger.info(f"Updating replicas: {m['data']}")
                 replicas = m['data'].split("-")
                 # kubeproc = []
-                if (self.lastR is None):
+                if self.lastR is None:
                     self.lastR = {}
                 for idx, r in enumerate(replicas):
-                    self.logger.info(f"updating tier{idx + 1} to {float(r)} replicas")
-                    if (f"tier{idx + 1}" not in self.lastR):
-                        self.lastR[f"tier{idx + 1}"] = np.ceil(float(r))
-                        self.actuate_kubernetes_api(idx + 1, np.ceil(float(r)))
-                    else:
-                        if (self.lastR[f"tier{idx + 1}"] > np.ceil(float(r))):
-                            self.logger.info(f"Downscaling tier{idx + 1} " + str(
-                                self.lastR[f"tier{idx + 1}"]) + f"->{np.ceil(float(r))}")
-                            self.actuate_kubernetes_api(idx + 1, np.ceil(float(r)))
-                        elif (self.lastR[f"tier{idx + 1}"] < np.ceil(float(r))):
-                            self.logger.info(
-                                f"Upscaling tier{idx + 1} " + str(self.lastR[f"tier{idx + 1}"]) + f"->{float(r)}")
-                            self.actuate_kubernetes_api(idx + 1, np.ceil(float(r)))
-                        self.lastR[f"tier{idx + 1}"] = np.ceil(float(r))
+                    self.logger.info(f"updating tier{idx + 1} to {float(r) * 1000}m cores")
+                    self.actuate_kubernetes_api(idx + 1, float(r))
+
+                    # if (f"tier{idx + 1}" not in self.lastR):
+                    #     self.lastR[f"tier{idx + 1}"] = np.ceil(float(r))
+                    #     self.actuate_kubernetes_api(idx + 1, np.ceil(float(r)))
+                    # else:
+                    #     if (self.lastR[f"tier{idx + 1}"] > np.ceil(float(r))):
+                    #         self.logger.info(f"Downscaling tier{idx + 1} " + str(
+                    #             self.lastR[f"tier{idx + 1}"]) + f"->{np.ceil(float(r))}")
+                    #         self.actuate_kubernetes_api(idx + 1, np.ceil(float(r)))
+                    #     elif (self.lastR[f"tier{idx + 1}"] < np.ceil(float(r))):
+                    #         self.logger.info(
+                    #             f"Upscaling tier{idx + 1} " + str(self.lastR[f"tier{idx + 1}"]) + f"->{float(r)}")
+                    #         self.actuate_kubernetes_api(idx + 1, np.ceil(float(r)))
+                    #     self.lastR[f"tier{idx + 1}"] = np.ceil(float(r))
         except Exception as e:
             self.logger.error("mainLoop failed with full error trace:")
             self.logger.error(e, exc_info=True)

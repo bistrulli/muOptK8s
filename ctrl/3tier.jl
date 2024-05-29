@@ -151,7 +151,7 @@ subscribe(channels...; stop_fn=stop_fn, client=subscriber) do msg
         slack=0
         util=zeros(1,length(NC))
         for tier=1:length(NC)
-            nR=value(NC[tier])/dimRep
+            nR=value(NC[tier]) #/dimRep
             @info "tier" tier "rawReplica" nR
             if(R[end,tier]>ceil(nR))#downscaling
                 @info "downscaling"
@@ -168,7 +168,8 @@ subscribe(channels...; stop_fn=stop_fn, client=subscriber) do msg
                     @info logmsg
                 end
             end
-            global R[end,tier]=max(ceil(nR+slack),1)
+            #global R[end,tier]=max(ceil(nR+slack),1)
+            global R[end,tier]=nR
             global util[1,tier]=value(T[2+tier]/(MU[2+tier]*NC[tier]))
         end
         @info "New Replica" R[end,:]
