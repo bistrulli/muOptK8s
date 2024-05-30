@@ -15,7 +15,8 @@ from kubernetes.client import ApiException
 config.load_kube_config()
 
 # Create a Kubernetes API client
-v1_api = client.AppsV1Api()
+# v1_api = client.AppsV1Api()
+v1_api = client.CoreV1Api()
 
 
 def getCli():
@@ -192,30 +193,53 @@ class muOpt(object):
         """
         Scales the deployment of a tier to the specified R replicas.
         """
-        deployment_name = f"spring-test-app-tier{tier}"
+        # deployment_name = f"spring-test-app-tier{tier}"
+
+        pod_name = f"tier{tier}-pod"
+        container_name = f"tier{tier}-container"
+        new_cpu_request = f"{str(R * 1000)}m"
+
+        # Define the patch data with the updated CPU request
+        patch_body = {
+            "spec": {
+                "containers": [
+                    {
+                        "name": container_name,
+                        "resources": {
+                            "requests": {
+                                "cpu": new_cpu_request
+                            }
+                        }
+                    }
+                ]
+            }
+        }
 
         try:
             # Get the deployment object
-            deployment = v1_api.read_namespaced_deployment(name=deployment_name, namespace='default')
+
+            # deployment = v1_api.read_namespaced_deployment(name=deployment_name, namespace='default')
 
             # Update and patch the deployment spec with desired replicas
             # deployment.spec.replicas = R
-            deployment.spec.template.spec.containers[0].resources.requests['cpu'] = f"{str(R * 1000)}m"
+            # deployment.spec.template.spec.containers[0].resources.requests['cpu'] = f"{str(R * 1000)}m"
 
-            v1_api.patch_namespaced_deployment(name=deployment_name, namespace='default', body=deployment)
+            # v1_api.patch_namespaced_deployment(name=deployment_name, namespace='default', body=deployment)
+
+            v1_api.patch_namespaced_pod(pod_name, "default", patch_body)
 
             # Check updated value of CPU request
-            container = deployment.spec.template.spec.containers[0]
-            cpu_request = container.resources.requests.get('cpu', None)
-
-            # Print confirmation message
-            self.logger.info(f"Deployment '{deployment_name}' scaled to {cpu_request} request.")
+            # container = deployment.spec.template.spec.containers[0]
+            # cpu_request = container.resources.requests.get('cpu', None)
+            #
+            # # Print confirmation message
+            # self.logger.info(f"Deployment '{deployment_name}' scaled to {cpu_request} request.")
 
         except ApiException as e:
             if e.status == 403:
-                self.logger.error(f"Insufficient permissions to access deployment '{deployment_name}'.")
+                self.logger.error(f"Insufficient permissions to access pod '{pod_name}'.")
             elif e.status == 404:
-                self.logger.error(f"Deployment '{deployment_name}' not found in namespace 'default'.")
+                self.logger.error(f"Pod '{pod_name}' not found in namespace 'default'.")
             else:
                 self.logger.error(f"Failed to scale deployment: {e}")
 
