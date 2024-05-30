@@ -198,6 +198,7 @@ class muOpt(object):
         pod_name = f"tier{tier}-pod"
         container_name = f"tier{tier}-container"
         new_cpu_request = f"{str(R * 1000)}m"
+        new_cpu_limit = f"{str(R * 1250)}m"
 
         # Define the patch data with the updated CPU request
         patch_body = {
@@ -208,6 +209,9 @@ class muOpt(object):
                         "resources": {
                             "requests": {
                                 "cpu": new_cpu_request
+                            },
+                            "limits": {
+                                "cpu": new_cpu_limit
                             }
                         }
                     }
