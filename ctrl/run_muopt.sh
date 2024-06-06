@@ -2,8 +2,8 @@
 
 name="test1"
 window=15
-usage=0.5
+usage=0.95
 
-gcloud container clusters get-credentials cluster-1 --region=northamerica-northeast1-a
+gcloud container clusters get-credentials cluster-2 --region=northamerica-northeast1-a
 rm ./logs/$name/*
-python3 muopt.py -n $name -t $window -ut $usage
+python3 autoscaler.py -m muOpt -n $name -t $window -ut $usage
