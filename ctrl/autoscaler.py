@@ -54,6 +54,7 @@ class Autoscaler(object):
         # Initialization procedures
         self.init_logger()
         self.init_redis()
+        self.init_kubernetes()
 
         # Autoscaler choice
         if self.method == "muOpt":
