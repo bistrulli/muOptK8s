@@ -119,6 +119,7 @@ class Autoscaler(object):
             raise
 
     def vpa_tracking(self):
+        self.logger.info("Inside vpa_tracking")
         while True:
             reqs = []
             for i in range(1, 4):
