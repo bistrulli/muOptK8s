@@ -63,6 +63,7 @@ class Autoscaler(object):
         else:
             self.logger.info("Tracking the recommendations from the \'VPA\' autoscaler.")
             self.vpa_thread = Thread(target=self.vpa_tracking)
+            self.vpa_thread.start()
 
         # Start main loop
         self.main_loop()
