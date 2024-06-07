@@ -124,7 +124,9 @@ class Autoscaler(object):
             for i in range(1, 4):
                 reqs.append(self.get_cpu_str_by_vpa(f"tier{i}-vpa"))
             combined_reqs = "-".join(reqs)
-            self.rCon.publish(f"{self.name}_srv", combined_reqs)
+            channel_name = f"{self.name}_srv"
+            self.logger.info(f"Publishing {combined_reqs} to channel {channel_name}")
+            self.rCon.publish(channel_name, combined_reqs)
             time.sleep(self.ctrlInterval)
 
     def start_julia_opt(self):
@@ -259,6 +261,7 @@ class Autoscaler(object):
             }
         }
         try:
+            self.logger.info(f"Updating pod {pod_name} to CPU request {cpu_request} and CPU limit {cpu_limit}")
             self.v1_api.patch_namespaced_pod(name=pod_name, namespace="default", body=patch_body)
         except ApiException as e:
             if e.status == 403:
@@ -297,6 +300,8 @@ class Autoscaler(object):
                 print(f"  CPU Target: {cpu_target}")
                 # print(f"  CPU Limit: {cpu_limit}")
                 # print(f"  CPU Upper Bound: {cpu_upper_bound}")
+                self.logger.info(f"Recommended CPU for {vpa_name}: {cpu_target_value}")
+
                 return str(cpu_target_value)
             else:
                 print(f"VPA named {vpa_name} not found in the provided data.")
