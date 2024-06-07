@@ -58,9 +58,11 @@ class Autoscaler(object):
 
         # Autoscaler choice
         if self.method == "muOpt":
+            self.logger.info("Running the \'muOpt\' autoscaler.")
             self.start_julia_opt()
         else:
-            print("VPA")
+            self.logger.info("Tracking the recommendations from the \'VPA\' autoscaler.")
+            self.vpa_thread = Thread(target=self.vpa_tracking)
 
         # Start main loop
         self.main_loop()
@@ -115,6 +117,15 @@ class Autoscaler(object):
             self.logger.error("initLogger failed with full error trace:")
             self.logger.error(e, exc_info=True)
             raise
+
+    def vpa_tracking(self):
+        while True:
+            reqs = []
+            for i in range(1, 4):
+                reqs.append(self.get_cpu_str_by_vpa(f"tier{i}-vpa"))
+            combined_reqs = "-".join(reqs)
+            self.rCon.publish(f"{self.name}_srv", combined_reqs)
+            time.sleep(self.ctrlInterval)
 
     def start_julia_opt(self):
         """
@@ -257,42 +268,41 @@ class Autoscaler(object):
             else:
                 print(f"Failed to scale pod: {e}")
 
-    # def get_cpu_by_vpa(self, vpa_name):
-    #     try:
-    #         api_response = self.vpa_api.list_namespaced_custom_object(group="autoscaling.k8s.io", version="v1",
-    #                                                              namespace="default",
-    #                                                              plural="verticalpodautoscalers")
-    #
-    #         vpa_data = None
-    #         for vpa in api_response["items"]:
-    #             if vpa["metadata"]["name"] == vpa_name:
-    #                 vpa_data = vpa
-    #                 break
-    #         if vpa_data:
-    #             # Extract container recommendation (assuming only one container)
-    #             container_recommendation = vpa_data['status']['recommendation']['containerRecommendations'][0]
-    #
-    #             # Extract CPU values
-    #             # cpu_lower_bound = container_recommendation['lowerBound']['cpu']
-    #             cpu_target = container_recommendation['target']['cpu']
-    #             # cpu_upper_bound = container_recommendation['upperBound']['cpu']
-    #             cpu_target_millicores = int(cpu_target[:-1])
-    #             cpu_limit_millicores = int(cpu_target_millicores * 1.1)
-    #             cpu_limit = f"{cpu_limit_millicores}m"
-    #
-    #             # Print results
-    #             print(f"VPA: {vpa_data['metadata']['name']}")
-    #             # print(f"  CPU Lower Bound: {cpu_lower_bound}")
-    #             print(f"  CPU Target: {cpu_target}")
-    #             print(f"  CPU Limit: {cpu_limit}")
-    #             # print(f"  CPU Upper Bound: {cpu_upper_bound}")
-    #
-    #             return cpu_target, cpu_limit
-    #         else:
-    #             print(f"VPA named {vpa_name} not found in the provided data.")
-    #
-    #     except client.ApiException as e:
-    #         print(f"Error retrieving VPA details: {e}")
+    def get_cpu_str_by_vpa(self, vpa_name):
+        try:
+            api_response = self.vpa_api.list_namespaced_custom_object(group="autoscaling.k8s.io", version="v1",
+                                                                      namespace="default",
+                                                                      plural="verticalpodautoscalers")
+
+            vpa_data = None
+            for vpa in api_response["items"]:
+                if vpa["metadata"]["name"] == vpa_name:
+                    vpa_data = vpa
+                    break
+            if vpa_data:
+                # Extract container recommendation (assuming only one container)
+                container_recommendation = vpa_data['status']['recommendation']['containerRecommendations'][0]
+
+                # Extract CPU values
+                # cpu_lower_bound = container_recommendation['lowerBound']['cpu']
+                cpu_target = container_recommendation['target']['cpu']  # e.g. 1150m
+                # cpu_upper_bound = container_recommendation['upperBound']['cpu']
+                cpu_target_value = int(cpu_target[:-1]) / 1000  # e.g. 1.15
+                # cpu_limit_millicores = int(cpu_target_millicores * 1.1)
+                # cpu_limit = f"{cpu_limit_millicores}m"
+
+                # Print results
+                print(f"VPA: {vpa_data['metadata']['name']}")
+                # print(f"  CPU Lower Bound: {cpu_lower_bound}")
+                print(f"  CPU Target: {cpu_target}")
+                # print(f"  CPU Limit: {cpu_limit}")
+                # print(f"  CPU Upper Bound: {cpu_upper_bound}")
+                return str(cpu_target_value)
+            else:
+                print(f"VPA named {vpa_name} not found in the provided data.")
+
+        except client.ApiException as e:
+            print(f"Error retrieving VPA details: {e}")
 
 
 if __name__ == '__main__':
