@@ -221,8 +221,8 @@ class Autoscaler(object):
                     tier_number = idx + 1
                     deployment_name = f"spring-test-app-tier{tier_number}"
                     container_name = f"{deployment_name}-container"
-                    cpu_request = f"{float(request) * 1000}m"
-                    cpu_limit = f"{float(request) * 1100}m"
+                    cpu_request = f"{int(float(request) * 1000)}m"
+                    cpu_limit = f"{int(float(request) * 1100)}m"
                     self.logger.info(
                         f"Updating tier{tier_number} to CPU request {cpu_request} and CPU limit {cpu_limit}")
 
