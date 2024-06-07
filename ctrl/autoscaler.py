@@ -292,7 +292,10 @@ class Autoscaler(object):
                 # cpu_lower_bound = container_recommendation['lowerBound']['cpu']
                 cpu_target = container_recommendation['target']['cpu']  # e.g. 1150m
                 # cpu_upper_bound = container_recommendation['upperBound']['cpu']
-                cpu_target_value = int(cpu_target[:-1]) / 1000  # e.g. 1.15
+                if len(cpu_target) > 1:
+                    cpu_target_value = int(cpu_target[:-1]) / 1000  # e.g. 1.15
+                else:
+                    cpu_target_value = cpu_target
                 # cpu_limit_millicores = int(cpu_target_millicores * 1.1)
                 # cpu_limit = f"{cpu_limit_millicores}m"
 
