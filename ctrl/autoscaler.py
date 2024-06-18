@@ -18,7 +18,7 @@ def get_cli():
     parser = argparse.ArgumentParser(description="Autoscaler Command Line Interface")
 
     parser.add_argument("-m", "--method", type=str,
-                        help='The autoscaler (either muOpt or VPA)', choices=["muOpt", "VPA"], required=True)
+                        help='The autoscaler (either muOpt, VPA, or HPA)', choices=["muOpt", "VPA", "HPA"], required=True)
     parser.add_argument("-t", "--wctrl", type=int, default=15,
                         help='The control period (default: 15s)', required=False)
     parser.add_argument("-n", "--name", type=str,
@@ -60,10 +60,12 @@ class Autoscaler(object):
         if self.method == "muOpt":
             self.logger.info("Running the \'muOpt\' autoscaler.")
             self.start_julia_opt()
-        else:
+        elif self.method == "VPA":
             self.logger.info("Tracking the recommendations from the \'VPA\' autoscaler.")
             self.vpa_thread = Thread(target=self.vpa_tracking)
             self.vpa_thread.start()
+        else:
+            self.logger.info("\'HPA\' autoscaler selected. Remember to activate it with kubectl.")
 
         # Start main loop
         self.main_loop()
