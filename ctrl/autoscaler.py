@@ -224,9 +224,8 @@ class Autoscaler(object):
                 for m in pubsub.listen():
                     if 'pmessage' != m['type']:
                         continue
-                    # self.logger.info(f"Updating replicas: {m['data']}")
                     replicas = m['data'].split("-")
-                    # kubeproc = []
+
                     if self.lastR is None:
                         self.lastR = {}
                     for idx, r in enumerate(replicas):
