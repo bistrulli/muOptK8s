@@ -8,6 +8,7 @@ from threading import Thread
 import argparse
 from kubernetes import client, config
 from kubernetes.client import ApiException
+import numpy as np
 
 
 def get_cli():
@@ -18,7 +19,9 @@ def get_cli():
     parser = argparse.ArgumentParser(description="Autoscaler Command Line Interface")
 
     parser.add_argument("-m", "--method", type=str,
-                        help='The autoscaler (either muOpt, VPA, or HPA)', choices=["muOpt", "VPA", "HPA"], required=True)
+                        help='The autoscaler (either muOpt, muOpt-H, VPA, or HPA)',
+                        choices=["muOpt", "muOpt-H", "VPA", "HPA"],
+                        required=True)
     parser.add_argument("-t", "--wctrl", type=int, default=15,
                         help='The control period (default: 15s)', required=False)
     parser.add_argument("-n", "--name", type=str,
@@ -58,7 +61,10 @@ class Autoscaler(object):
 
         # Autoscaler choice
         if self.method == "muOpt":
-            self.logger.info("Running the \'muOpt\' autoscaler.")
+            self.logger.info("Running the \'muOpt\' autoscaler (in vertical scaling mode).")
+            self.start_julia_opt()
+        elif self.method == "muOpt-H":
+            self.logger.info("Running the \'muOpt\' autoscaler in horizontal scaling mode.")
             self.start_julia_opt()
         elif self.method == "VPA":
             self.logger.info("Tracking the recommendations from the \'VPA\' autoscaler.")
@@ -79,7 +85,8 @@ class Autoscaler(object):
         config.load_kube_config()
 
         self.vpa_api = client.CustomObjectsApi()
-        self.v1_api = client.CoreV1Api()
+        self.core_v1_api = client.CoreV1Api()
+        self.apps_v1_api = client.AppsV1Api()
 
     def init_redis(self):
         """
@@ -178,7 +185,7 @@ class Autoscaler(object):
     def get_pod_names_by_deployment(self, deployment_name):
         pods = []
         try:
-            all_pods = self.v1_api.list_namespaced_pod(namespace='default')
+            all_pods = self.core_v1_api.list_namespaced_pod(namespace='default')
             for pod in all_pods.items:
                 pod_name = pod.metadata.name
                 if deployment_name in pod_name:
@@ -211,33 +218,66 @@ class Autoscaler(object):
             raise
 
     def update_all_pods(self, pubsub):
-        try:
-            for m in pubsub.listen():
-                if 'pmessage' != m['type']:
-                    continue
-                requests = m['data'].split("-")
+        # Horizontal Scaling
+        if self.method == "muOpt-H":
+            try:
+                for m in pubsub.listen():
+                    if 'pmessage' != m['type']:
+                        continue
+                    # self.logger.info(f"Updating replicas: {m['data']}")
+                    replicas = m['data'].split("-")
+                    # kubeproc = []
+                    if self.lastR is None:
+                        self.lastR = {}
+                    for idx, r in enumerate(replicas):
+                        tier_number = idx + 1
+                        self.logger.info(f"Updating tier{tier_number} to {float(r)} replicas")
+                        new_replicas = np.ceil(float(r))
+                        if f"tier{tier_number}" not in self.lastR:
+                            self.lastR[f"tier{tier_number}"] = new_replicas
+                            self.horizontally_scale_deployment(tier_number, new_replicas)
+                        else:
+                            if self.lastR[f"tier{tier_number}"] > new_replicas:
+                                self.logger.info(f"Downscaling tier{tier_number} " + str(
+                                    self.lastR[f"tier{tier_number}"]) + f"->{new_replicas}")
+                                self.horizontally_scale_deployment(tier_number, new_replicas)
+                            elif self.lastR[f"tier{tier_number}"] < new_replicas:
+                                self.logger.info(
+                                    f"Upscaling tier{tier_number} " + str(
+                                        self.lastR[f"tier{tier_number}"]) + f"->{float(r)}")
+                                self.horizontally_scale_deployment(tier_number, new_replicas)
+                            self.lastR[f"tier{tier_number}"] = new_replicas
+            except Exception as e:
+                self.logger.error("mainLoop failed with full error trace:")
+                self.logger.error(e, exc_info=True)
+        else:  # Vertical Scaling
+            try:
+                for m in pubsub.listen():
+                    if 'pmessage' != m['type']:
+                        continue
+                    requests = m['data'].split("-")
 
-                if self.lastR is None:
-                    self.lastR = {}
-                for idx, request in enumerate(requests):
-                    tier_number = idx + 1
-                    deployment_name = f"spring-test-app-tier{tier_number}"
-                    container_name = f"{deployment_name}-container"
-                    cpu_request = f"{int(float(request) * 1000)}m"
-                    cpu_limit = f"{int(float(request) * 1100)}m"
-                    self.logger.info(
-                        f"Updating tier{tier_number} to CPU request {cpu_request} and CPU limit {cpu_limit}")
+                    if self.lastR is None:
+                        self.lastR = {}
+                    for idx, request in enumerate(requests):
+                        tier_number = idx + 1
+                        deployment_name = f"spring-test-app-tier{tier_number}"
+                        container_name = f"{deployment_name}-container"
+                        cpu_request = f"{int(float(request) * 1000)}m"
+                        cpu_limit = f"{int(float(request) * 1100)}m"
+                        self.logger.info(
+                            f"Updating tier{tier_number} to CPU request {cpu_request} and CPU limit {cpu_limit}")
 
-                    pod_names = self.get_pod_names_by_deployment(deployment_name)
+                        pod_names = self.get_pod_names_by_deployment(deployment_name)
 
-                    for pod_name in pod_names:
-                        self.scale_pod(pod_name, container_name, cpu_request, cpu_limit)
+                        for pod_name in pod_names:
+                            self.vertically_scale_pod(pod_name, container_name, cpu_request, cpu_limit)
 
-        except Exception as e:
-            self.logger.error("update_all_pods failed with full error trace:")
-            self.logger.error(e, exc_info=True)
+            except Exception as e:
+                self.logger.error("update_all_pods failed with full error trace:")
+                self.logger.error(e, exc_info=True)
 
-    def scale_pod(self, pod_name, container_name, cpu_request, cpu_limit):
+    def vertically_scale_pod(self, pod_name, container_name, cpu_request, cpu_limit):
         """
         Vertically scale a pod.
 
@@ -266,7 +306,7 @@ class Autoscaler(object):
         }
         try:
             self.logger.info(f"Updating pod {pod_name} to CPU request {cpu_request} and CPU limit {cpu_limit}")
-            self.v1_api.patch_namespaced_pod(name=pod_name, namespace="default", body=patch_body)
+            self.core_v1_api.patch_namespaced_pod(name=pod_name, namespace="default", body=patch_body)
         except ApiException as e:
             if e.status == 403:
                 print(f"Insufficient permissions to access pod '{pod_name}'.")
@@ -274,6 +314,24 @@ class Autoscaler(object):
                 print(f"Pod '{pod_name}' not found in namespace 'default'.")
             else:
                 print(f"Failed to scale pod: {e}")
+
+    def horizontally_scale_deployment(self, tier, replicas):
+        """
+        Scale a given tier to a provided target number of replicas.
+
+        :param tier:        The tier to scale.
+        :param replicas:    The target number of replicas for the given tier.
+        :return:
+        """
+        deployment_name = f"spring-test-app-tier{tier}"
+        deployment = self.apps_v1_api.read_namespaced_deployment(name=deployment_name, namespace='default')
+
+        # Update and patch the deployment spec with desired replicas
+        deployment.spec.replicas = replicas
+        self.apps_v1_api.patch_namespaced_deployment(name=deployment_name, namespace='default', body=deployment)
+
+        self.logger.info(f"Deployment '{deployment_name}' scaled to {deployment.spec.replicas} replicas.")
+        return
 
     def get_cpu_str_by_vpa(self, vpa_name):
         try:
