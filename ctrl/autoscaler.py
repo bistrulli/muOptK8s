@@ -64,7 +64,7 @@ class Autoscaler(object):
             self.logger.info("Running the \'muOpt\' autoscaler (in vertical scaling mode).")
             self.start_julia_opt()
         elif self.method == "muOpt-H":
-            self.logger.info("Running the \'muOpt\' autoscaler in horizontal scaling mode.")
+            self.logger.info("Running the \'muOpt\' autoscaler (in horizontal scaling mode).")
             self.start_julia_opt()
         elif self.method == "VPA":
             self.logger.info("Tracking the recommendations from the \'VPA\' autoscaler.")
@@ -233,19 +233,24 @@ class Autoscaler(object):
                         self.logger.info(f"Updating tier{tier_number} to {float(r)} replicas")
                         new_replicas = np.ceil(float(r))
                         if f"tier{tier_number}" not in self.lastR:
+                            self.logger.info("DEBUG1")
                             self.lastR[f"tier{tier_number}"] = new_replicas
                             self.horizontally_scale_deployment(tier_number, new_replicas)
                         else:
+                            self.logger.info("DEBUG2")
                             if self.lastR[f"tier{tier_number}"] > new_replicas:
+                                self.logger.info("DEBUG3")
                                 self.logger.info(f"Downscaling tier{tier_number} " + str(
                                     self.lastR[f"tier{tier_number}"]) + f"->{new_replicas}")
                                 self.horizontally_scale_deployment(tier_number, new_replicas)
                             elif self.lastR[f"tier{tier_number}"] < new_replicas:
+                                self.logger.info("DEBUG4")
                                 self.logger.info(
                                     f"Upscaling tier{tier_number} " + str(
                                         self.lastR[f"tier{tier_number}"]) + f"->{float(r)}")
                                 self.horizontally_scale_deployment(tier_number, new_replicas)
                             self.lastR[f"tier{tier_number}"] = new_replicas
+                            self.logger.info("DEBUG5")
             except Exception as e:
                 self.logger.error("mainLoop failed with full error trace:")
                 self.logger.error(e, exc_info=True)
