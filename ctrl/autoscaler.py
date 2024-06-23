@@ -10,6 +10,8 @@ from kubernetes import client, config
 from kubernetes.client import ApiException
 import numpy as np
 
+muopt_folder = "~/muOptK8s/ctrl"
+
 
 def get_cli():
     """
@@ -110,8 +112,8 @@ class Autoscaler(object):
         :return:
         """
         try:
-            Path("logs/%s" % (self.name)).mkdir(parents=True, exist_ok=True)
-            log_file = "logs/%s/%s.log" % (self.name, self.name)
+            Path(f"{muopt_folder}/logs/{self.name}").mkdir(parents=True, exist_ok=True)
+            log_file = f"{muopt_folder}/logs/{self.name}/{self.name}.log"
 
             max_file_size_bytes = 512000  # Set the maximum size of each log file (in bytes)
             backup_count = 5  # Set the number of backup log files to keep
@@ -230,27 +232,22 @@ class Autoscaler(object):
                         self.lastR = {}
                     for idx, r in enumerate(replicas):
                         tier_number = idx + 1
-                        self.logger.info(f"Updating tier{tier_number} to {float(r)} replicas")
                         new_replicas = np.ceil(float(r))
+                        self.logger.info(f"Updating tier{tier_number} to {new_replicas} replicas")
                         if f"tier{tier_number}" not in self.lastR:
-                            self.logger.info("DEBUG1")
                             self.lastR[f"tier{tier_number}"] = new_replicas
                             self.horizontally_scale_deployment(tier_number, new_replicas)
                         else:
-                            self.logger.info("DEBUG2")
                             if self.lastR[f"tier{tier_number}"] > new_replicas:
-                                self.logger.info("DEBUG3")
                                 self.logger.info(f"Downscaling tier{tier_number} " + str(
                                     self.lastR[f"tier{tier_number}"]) + f"->{new_replicas}")
                                 self.horizontally_scale_deployment(tier_number, new_replicas)
                             elif self.lastR[f"tier{tier_number}"] < new_replicas:
-                                self.logger.info("DEBUG4")
                                 self.logger.info(
                                     f"Upscaling tier{tier_number} " + str(
                                         self.lastR[f"tier{tier_number}"]) + f"->{float(r)}")
                                 self.horizontally_scale_deployment(tier_number, new_replicas)
                             self.lastR[f"tier{tier_number}"] = new_replicas
-                            self.logger.info("DEBUG5")
             except Exception as e:
                 self.logger.error("mainLoop failed with full error trace:")
                 self.logger.error(e, exc_info=True)
