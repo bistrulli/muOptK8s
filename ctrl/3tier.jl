@@ -174,7 +174,7 @@ subscribe(channels...; stop_fn=stop_fn, client=subscriber) do msg
         end
         @info "New Replica" R[end,:]
         @info "Util" util
-        publish(@sprintf("%s_srv",name),join(R[end,:],"-"); client=redis_cli)
+        publish(@sprintf("%s_srv",name),join(R[end,:],"_"); client=redis_cli)
     end
 end
 

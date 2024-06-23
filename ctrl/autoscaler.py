@@ -136,7 +136,7 @@ class Autoscaler(object):
             reqs = []
             for i in range(1, 4):
                 reqs.append(self.get_cpu_str_by_vpa(f"tier{i}-vpa"))
-            combined_reqs = "-".join(reqs)
+            combined_reqs = "_".join(reqs)
             channel_name = f"{self.name}_srv"
             self.logger.info(f"Publishing {combined_reqs} to channel {channel_name}")
             self.rCon.publish(channel_name, combined_reqs)
@@ -226,7 +226,7 @@ class Autoscaler(object):
                 for m in pubsub.listen():
                     if 'pmessage' != m['type']:
                         continue
-                    replicas = m['data'].split("-")
+                    replicas = m['data'].split("_")
 
                     if self.lastR is None:
                         self.lastR = {}
@@ -256,7 +256,7 @@ class Autoscaler(object):
                 for m in pubsub.listen():
                     if 'pmessage' != m['type']:
                         continue
-                    requests = m['data'].split("-")
+                    requests = m['data'].split("_")
 
                     if self.lastR is None:
                         self.lastR = {}
