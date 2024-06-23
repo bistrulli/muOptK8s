@@ -112,8 +112,8 @@ class Autoscaler(object):
         :return:
         """
         try:
-            Path(f"{muopt_folder}/logs/{self.name}").mkdir(parents=True, exist_ok=True)
-            log_file = f"{muopt_folder}/logs/{self.name}/{self.name}.log"
+            Path(f"logs/{self.name}").mkdir(parents=True, exist_ok=True)
+            log_file = f"logs/{self.name}/{self.name}.log"
 
             max_file_size_bytes = 512000  # Set the maximum size of each log file (in bytes)
             backup_count = 5  # Set the number of backup log files to keep
