@@ -155,8 +155,8 @@ subscribe(channels...; stop_fn=stop_fn, client=subscriber) do msg
             @info "tier" tier "rawReplica" nR
             if(R[end,tier]>ceil(nR))#downscaling
                 @info "downscaling"
-                if(nR-floor(nR)>=0.8)
-                    slack=0.21
+                if(nR-floor(nR)>=0.95)
+                    slack=0.06
                     logmsg=@sprintf("dovrei andare a %d invece mantengo %d",ceil(nR),ceil(nR+slack))
                     @info logmsg
                 end
