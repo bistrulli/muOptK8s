@@ -15,7 +15,7 @@ s = ArgParseSettings()
         required = false
         default = "logs/test/test_opt.log"
     "--ut"
-        help = "utilizzo target"
+        help = "Utiliation target"
         arg_type = Float64
         required = false
         default = 0.5
@@ -23,11 +23,11 @@ end
 parsed_args = parse_args(ARGS, s)
 name = parsed_args["name"]
 log_path = parsed_args["log_path"]
-ut=parsed_args["ut"]
+ut = parsed_args["ut"]
 
 logger = RollingLogger(log_path, 512000, 5, Logging.Info);
 
-wdir=pwd()
+wdir = pwd()
 
 #model = Model(()->MadNLP.Optimizer(print_level=MadNLP.INFO))
 model = Model(Ipopt.Optimizer)
@@ -38,29 +38,29 @@ set_optimizer_attribute(model, "max_iter", 100000)
 #set_optimizer_attribute(model, "bound_relax_factor", 10^-4)
 set_optimizer_attribute(model, "print_level", 0)
         #Xb Xd Xb1 X1e  x12 x2e x23 x3e
-jump=[  -1  +1  +0  +0  +0  +0  +0  +0;
-        +0  -1  +1  +1  +0  +0  +0  +0;
-        +0  +0  +0  -1  +1  +1  +0  +0;
-        +0  +0  +0  +0  +0  -1  +1  +1;
-        +1  +0  -1  +0  -1  +0  -1  -1;
+jump = [  -1 + 1 + 0 + 0 + 0 + 0 + 0 + 0;
+        +0 - 1 + 1 + 1 + 0 + 0 + 0 + 0;
+        +0 + 0 + 0 - 1 + 1 + 1 + 0 + 0;
+        +0 + 0 + 0 + 0 + 0 - 1 + 1 + 1;
+        +1 + 0 - 1 + 0 - 1 + 0 - 1 - 1;
     ];
 
-alpha=10^-4
+alpha = 10^-4
 #maxNC=100
 
 #params = matread(@sprintf("%s/git/nodejsMicro/src/params.mat",homedir()))
 #MU=params["MU"]
 
-MU=ones(1,size(jump,2))*-1
+MU = ones(1,size(jump,2)) * -1
 
-R=zeros(1,3)
-dimRep=1
+R = zeros(1,3)
+dimRep = 1
 
-MU[1]=0.9709; #XValidate_e;
-MU[2]=100;
-MU[3]=18
-MU[4]=18
-MU[5]=18
+MU[1] = 0.9709; #XValidate_e;
+MU[2] = 100;
+MU[3] = 18
+MU[4] = 18
+MU[5] = 18
 
 @variable(model,T[i=1:size(jump,1)]>=0)
 @variable(model,X[i=1:size(jump,2)]>=0)
@@ -147,24 +147,25 @@ subscribe(channels...; stop_fn=stop_fn, client=subscriber) do msg
             error(status)
         end
 
-        #scendo il numero di repliche solo se occorre veramente
         slack=0
         util=zeros(1,length(NC))
         for tier=1:length(NC)
             nR=value(NC[tier])/dimRep
             @info "tier" tier "rawReplica" nR
-            if(R[end,tier]>ceil(nR))#downscaling
+            if(R[end,tier]>ceil(nR)) # Soft downscaling
                 @info "downscaling"
-                if(nR-floor(nR)>=0.95)
-                    slack=0.06
-                    logmsg=@sprintf("dovrei andare a %d invece mantengo %d",ceil(nR),ceil(nR+slack))
+                threshold=0.95
+                if(nR-floor(nR)>=threshold)
+                    slack=1.01-threshold
+                    logmsg=@sprintf("Not downscaling to %d (keeping %d)",ceil(nR),ceil(nR+slack))
                     @info logmsg
                 end
-            elseif(R[end,tier]<ceil(nR))#upscaling
+            elseif(R[end,tier]<ceil(nR)) # Preemptive upscaling
                 @info "upscaling"
-                if(nR-floor(nR)>=0.8)
-                    slack=0.21
-                    logmsg=@sprintf("dovrei rimanere a %d invece vado a %d",ceil(nR),ceil(nR+slack))
+                threshold=0.8
+                if(nR-floor(nR)>=threshold)
+                    slack=1.01-threshold
+                    logmsg=@sprintf("Preemptively upscaling to %d (instead of keeping %d)",ceil(nR+slack),ceil(nR))
                     @info logmsg
                 end
             end

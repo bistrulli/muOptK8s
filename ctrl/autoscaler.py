@@ -10,8 +10,6 @@ from kubernetes import client, config
 from kubernetes.client import ApiException
 import numpy as np
 
-muopt_folder = "~/muOptK8s/ctrl"
-
 
 def get_cli():
     """
@@ -37,24 +35,24 @@ def get_cli():
 
 class Autoscaler(object):
     method = None
-    optProc = None
+    opt_proc = None
     name = None
-    juliaOptPath = None
-    ctrlInterval = None
-    lastR = None
+    julia_opt_path = None
+    ctrl_interval = None
+    last_r = None
     ut = None
 
-    def __init__(self, name, method, juliaOptPath=None, ctrlInterval=None, ut=None):
+    def __init__(self, name, method, julia_opt_path=None, ctrl_interval=None, ut=None):
         self.name = name
         self.method = method
-        self.ctrlInterval = ctrlInterval
+        self.ctrl_interval = ctrl_interval
         self.ut = ut
-        if not juliaOptPath.is_file():
+        if not julia_opt_path.is_file():
             self.logger.error("juliaOptPath does not exist")
             raise ValueError("juliaOptPath does not exist")
 
-        self.juliaOptPath = juliaOptPath
-        self.lastR = None
+        self.julia_opt_path = julia_opt_path
+        self.last_r = None
 
         # Initialization procedures
         self.init_logger()
@@ -140,7 +138,7 @@ class Autoscaler(object):
             channel_name = f"{self.name}_srv"
             self.logger.info(f"Publishing {combined_reqs} to channel {channel_name}")
             self.rCon.publish(channel_name, combined_reqs)
-            time.sleep(self.ctrlInterval)
+            time.sleep(self.ctrl_interval)
 
     def start_julia_opt(self):
         """
@@ -148,26 +146,26 @@ class Autoscaler(object):
         :return:
         """
         try:
-            self.optProc = subprocess.Popen(["julia", str(self.juliaOptPath), "--name", self.name,
+            self.opt_proc = subprocess.Popen(["julia", str(self.julia_opt_path), "--name", self.name,
                                              "--log_path", "logs/%s/%s_opt.log" % (self.name, self.name),
                                              "--ut", str(self.ut)],
-                                            stdout=subprocess.DEVNULL)
+                                             stdout=subprocess.DEVNULL)
             p = self.rCon.pubsub()
-            p.psubscribe("%s_strt" % (self.name))
+            p.psubscribe(f"{self.name}_strt")
             while True:
                 self.logger.info("waiting julia to start")
                 msg = p.get_message()
-                if (msg is not None and msg["channel"] == "%s_strt" % (self.name) and msg["data"] == "started"):
+                if msg is not None and msg["channel"] == f"{self.name}_strt" and msg["data"] == "started":
                     print("Julia started")
                     self.logger.info("Julia started")
-                    p.unsubscribe("%s_strt" % (self.name))
+                    p.unsubscribe(f"{self.name}_strt")
                     break
                 time.sleep(0.5)
         except Exception as e:
             self.logger.error("start_julia_opt failed with full error trace:")
             self.logger.error(e, exc_info=True)
             self.srvPubSub.unsubscribe()
-            self.optProc.kill()
+            self.opt_proc.kill()
             raise
 
     def main_loop(self):
@@ -176,13 +174,13 @@ class Autoscaler(object):
                 self.logger.info("Main Iteration")
                 users = max(self.get_users(), 1)
                 self.communicate_users(users)
-                time.sleep(self.ctrlInterval)
+                time.sleep(self.ctrl_interval)
         except Exception as e:
             self.logger.error("main_loop failed with full error trace:")
             self.logger.error(e, exc_info=True)
         finally:
             self.srvPubSub.unsubscribe()
-            self.optProc.terminate()
+            self.opt_proc.terminate()
 
     def get_pod_names_by_deployment(self, deployment_name):
         pods = []
@@ -228,26 +226,26 @@ class Autoscaler(object):
                         continue
                     replicas = m['data'].split("_")
 
-                    if self.lastR is None:
-                        self.lastR = {}
+                    if self.last_r is None:
+                        self.last_r = {}
                     for idx, r in enumerate(replicas):
                         tier_number = idx + 1
                         new_replicas = np.ceil(float(r))
                         self.logger.info(f"Updating tier{tier_number} to {new_replicas} replicas")
-                        if f"tier{tier_number}" not in self.lastR:
-                            self.lastR[f"tier{tier_number}"] = new_replicas
+                        if f"tier{tier_number}" not in self.last_r:
+                            self.last_r[f"tier{tier_number}"] = new_replicas
                             self.horizontally_scale_deployment(tier_number, new_replicas)
                         else:
-                            if self.lastR[f"tier{tier_number}"] > new_replicas:
+                            if self.last_r[f"tier{tier_number}"] > new_replicas:
                                 self.logger.info(f"Downscaling tier{tier_number} " + str(
-                                    self.lastR[f"tier{tier_number}"]) + f"->{new_replicas}")
+                                    self.last_r[f"tier{tier_number}"]) + f"->{new_replicas}")
                                 self.horizontally_scale_deployment(tier_number, new_replicas)
-                            elif self.lastR[f"tier{tier_number}"] < new_replicas:
+                            elif self.last_r[f"tier{tier_number}"] < new_replicas:
                                 self.logger.info(
                                     f"Upscaling tier{tier_number} " + str(
-                                        self.lastR[f"tier{tier_number}"]) + f"->{float(r)}")
+                                        self.last_r[f"tier{tier_number}"]) + f"->{float(r)}")
                                 self.horizontally_scale_deployment(tier_number, new_replicas)
-                            self.lastR[f"tier{tier_number}"] = new_replicas
+                            self.last_r[f"tier{tier_number}"] = new_replicas
             except Exception as e:
                 self.logger.error("mainLoop failed with full error trace:")
                 self.logger.error(e, exc_info=True)
@@ -258,8 +256,8 @@ class Autoscaler(object):
                         continue
                     requests = m['data'].split("_")
 
-                    if self.lastR is None:
-                        self.lastR = {}
+                    if self.last_r is None:
+                        self.last_r = {}
                     for idx, request in enumerate(requests):
                         tier_number = idx + 1
                         deployment_name = f"spring-test-app-tier{tier_number}"
@@ -378,5 +376,5 @@ class Autoscaler(object):
 
 if __name__ == '__main__':
     args = get_cli()
-    ctrl = Autoscaler(name=args.name, method=args.method, juliaOptPath=Path(__file__).parent.joinpath("3tier.jl"),
-                      ctrlInterval=args.wctrl, ut=args.utarget)
+    ctrl = Autoscaler(name=args.name, method=args.method, julia_opt_path=Path(__file__).parent.joinpath("3tier.jl"),
+                      ctrl_interval=args.wctrl, ut=args.utarget)
