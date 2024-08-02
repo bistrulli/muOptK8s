@@ -13,7 +13,17 @@ import numpy as np
 
 webapp_keyword = 'spring-test-app'
 n_tiers = 3
+acmeair_vpas = ["vpa-main", "vpa-auth",
+                "vpa-byidget", "vpa-byidpost", "vpa-updatemiles", "vpa-validateid",
+                "vpa-bookflights", "vpa-bybookingnumber", "vpa-byuser", "vpa-cancelbooking",
+                "vpa-getrewardmiles", "vpa-queryflights"]
 
+acmeair_keywords = ["acmeair-main", "acmeair-auth",
+                       "acmeair-customer-byidget", "acmeair-customer-byidpost", "acmeair-customer-updatemiles", "acmeair-customer-validateid",
+                       "acmeair-booking-bookflights", "acmeair-booking-bybookingnumber", "acmeair-booking-byuser", "acmeair-booking-cancelbooking",
+                       "acmeair-flight-getrewardmiles", "acmeair-flight-queryflights"]
+
+three_tier_vpas = ["tier1-vpa", "tier2-vpa", "tier3-vpa"]
 
 def get_cli():
     """
@@ -22,16 +32,23 @@ def get_cli():
     """
     parser = argparse.ArgumentParser(description="Autoscaler Command Line Interface")
 
+    parser.add_argument("-n", "--name", type=str,
+                        help='The experiment name', required=True)
+
     parser.add_argument("-m", "--method", type=str,
                         help='The autoscaler (either muOpt, muOpt-H, VPA, or HPA)',
                         choices=["muOpt", "muOpt-H", "VPA", "HPA"],
                         required=True)
-    parser.add_argument("-t", "--wctrl", type=int, default=15,
-                        help='The control period (default: 15s)', required=False)
-    parser.add_argument("-n", "--name", type=str,
-                        help='The experiment name', required=True)
+    parser.add_argument("-wa", "--webapp", type=str,
+                        help='The name of the benchmark application (either 3tier or Acmeair).',
+                        choices=["3tier", "Acmeair"],
+                        required=True)
+
+    # Optional arguments
     parser.add_argument("-ut", "--utarget", type=float, default=0.5,
                         help='The target utilization (only available for µOpt)', required=False)
+    parser.add_argument("-t", "--wctrl", type=int, default=15,
+                        help='The control period (default: 15s)', required=False)
 
     # Parse the command-line arguments
     return parser.parse_args()
@@ -39,6 +56,7 @@ def get_cli():
 
 class Autoscaler(object):
     method = None
+    webapp = None
     opt_proc = None
     name = None
     julia_opt_path = None
@@ -46,9 +64,10 @@ class Autoscaler(object):
     last_r = None
     ut = None
 
-    def __init__(self, name, method, julia_opt_path=None, ctrl_interval=None, ut=None):
+    def __init__(self, name, method, webapp, julia_opt_path=None, ctrl_interval=None, ut=None):
         self.name = name
         self.method = method
+        self.webapp = webapp
         self.ctrl_interval = ctrl_interval
         self.ut = ut
         if not julia_opt_path.is_file():
@@ -75,7 +94,7 @@ class Autoscaler(object):
             self.vpa_thread = Thread(target=self.vpa_tracking)
             self.vpa_thread.start()
         else:
-            self.logger.info("\'HPA\' autoscaler selected. Remember to activate it with kubectl.")
+            self.logger.info("\'HPA\' autoscaler selected. Remember to activate it with kubectl (no further action needs to be taken by this program).")
 
         # Start main loop
         self.main_loop()
@@ -140,10 +159,14 @@ class Autoscaler(object):
         :return:
         """
         self.logger.info("Inside vpa_tracking")
+        if self.webapp == "Acmeair":
+            vpas_list = acmeair_vpas
+        else:
+            vpas_list = three_tier_vpas
         while True:
             reqs = []
-            for i in range(1, n_tiers + 1):
-                reqs.append(self.get_cpu_str_by_vpa(f"tier{i}-vpa"))
+            for vpa_name in vpas_list:
+                reqs.append(self.get_cpu_str_by_vpa(vpa_name))
             combined_reqs = "_".join(reqs)
             channel_name = f"{self.name}_srv"
             self.logger.info(f"Publishing {combined_reqs} to channel {channel_name}")
@@ -288,13 +311,14 @@ class Autoscaler(object):
                     if self.last_r is None:
                         self.last_r = {}
                     for idx, request in enumerate(requests):
-                        tier_number = idx + 1
-                        deployment_name = f"{webapp_keyword}-tier{tier_number}"
-                        container_name = f"{deployment_name}-container"
+                        #tier_number = idx + 1
+                        deployment_name = f"{acmeair_keywords[idx]}-deployment"
+                        #deployment_name = f"{webapp_keyword}-tier{tier_number}"
+                        container_name = f"{acmeair_keywords[idx]}-container"
                         cpu_request = f"{int(float(request) * 1000)}m"
                         cpu_limit = f"{int(float(request) * 1100)}m"
                         self.logger.info(
-                            f"Updating tier{tier_number} to CPU request {cpu_request} and CPU limit {cpu_limit}")
+                            f"Updating {deployment_name} to CPU request {cpu_request} and CPU limit {cpu_limit}")
 
                         pod_names = self.get_pod_names_by_deployment(deployment_name)
 
