@@ -11,6 +11,10 @@ from kubernetes.client import ApiException
 import numpy as np
 
 
+webapp_keyword = 'spring-test-app'
+n_tiers = 3
+
+
 def get_cli():
     """
     Get input arguments from CLI.
@@ -48,8 +52,8 @@ class Autoscaler(object):
         self.ctrl_interval = ctrl_interval
         self.ut = ut
         if not julia_opt_path.is_file():
-            self.logger.error("juliaOptPath does not exist")
-            raise ValueError("juliaOptPath does not exist")
+            self.logger.error("julia_opt_path does not exist")
+            raise ValueError("julia_opt_path does not exist")
 
         self.julia_opt_path = julia_opt_path
         self.last_r = None
@@ -82,6 +86,8 @@ class Autoscaler(object):
         :return:
         """
 
+        self.logger.info("Initializing kubernetes APIs")
+
         config.load_kube_config()
 
         self.vpa_api = client.CustomObjectsApi()
@@ -100,7 +106,7 @@ class Autoscaler(object):
             self.actuator = Thread(target=self.update_all_pods, args=(self.srvPubSub,))
             self.actuator.start()
         except Exception as e:
-            self.logger.error("initRedis failed with full error trace:")
+            self.logger.error("init_redis failed with full error trace:")
             self.logger.error(e, exc_info=True)
             raise
 
@@ -124,15 +130,19 @@ class Autoscaler(object):
             self.logger.setLevel(logging.INFO)
             self.logger.addHandler(file_handler)
         except Exception as e:
-            self.logger.error("initLogger failed with full error trace:")
+            self.logger.error("init_logger failed with full error trace:")
             self.logger.error(e, exc_info=True)
             raise
 
     def vpa_tracking(self):
+        """
+        Tracking the recommendations from VPA and publishing them in the Redis channel.
+        :return:
+        """
         self.logger.info("Inside vpa_tracking")
         while True:
             reqs = []
-            for i in range(1, 4):
+            for i in range(1, n_tiers + 1):
                 reqs.append(self.get_cpu_str_by_vpa(f"tier{i}-vpa"))
             combined_reqs = "_".join(reqs)
             channel_name = f"{self.name}_srv"
@@ -142,14 +152,13 @@ class Autoscaler(object):
 
     def start_julia_opt(self):
         """
-        Start the Julia optimization (muOpt)
+        Start the Julia optimization (muOpt).
         :return:
         """
         try:
             self.opt_proc = subprocess.Popen(["julia", str(self.julia_opt_path), "--name", self.name,
-                                             "--log_path", "logs/%s/%s_opt.log" % (self.name, self.name),
-                                             "--ut", str(self.ut)],
-                                             stdout=subprocess.DEVNULL)
+                                              "--log_path", f"logs/{self.name}/{self.name}_opt.log",
+                                              "--ut", str(self.ut)], stdout=subprocess.DEVNULL)
             p = self.rCon.pubsub()
             p.psubscribe(f"{self.name}_strt")
             while True:
@@ -169,11 +178,15 @@ class Autoscaler(object):
             raise
 
     def main_loop(self):
+        """
+        
+        :return:
+        """
         try:
             while True:
                 self.logger.info("Main Iteration")
                 users = max(self.get_users(), 1)
-                self.communicate_users(users)
+                self.set_users(users)
                 time.sleep(self.ctrl_interval)
         except Exception as e:
             self.logger.error("main_loop failed with full error trace:")
@@ -183,6 +196,11 @@ class Autoscaler(object):
             self.opt_proc.terminate()
 
     def get_pod_names_by_deployment(self, deployment_name):
+        """
+        Get the list of pods relative to a deployment.
+        :param deployment_name:     The deployment name.
+        :return:                    The list of pod names.
+        """
         pods = []
         try:
             all_pods = self.core_v1_api.list_namespaced_pod(namespace='default')
@@ -191,8 +209,9 @@ class Autoscaler(object):
                 if deployment_name in pod_name:
                     pods.append(pod_name)
             return pods
-        except client.ApiException as e:
-            print(f"Exception when calling CoreV1Api->list_namespaced_pod: {e}\n")
+        except Exception as e:
+            self.logger.error("get_pod_names_by_deployment failed with full error trace:")
+            self.logger.error(e, exc_info=True)
 
     def get_users(self):
         """
@@ -204,20 +223,30 @@ class Autoscaler(object):
             users = int(self.rCon.get(f"{self.name}_wrk"))
             return users
         except Exception as e:
-            self.logger.error("getUsers failed with full error trace:")
+            self.logger.error("get_users failed with full error trace:")
             self.logger.error(e, exc_info=True)
             raise
 
-    def communicate_users(self, usr):
+    def set_users(self, usr):
+        """
+        Publish the number of users in the Redis channel.
+        :param usr: Number of users.
+        :return:
+        """
         try:
             self.logger.info(f"Sending users {usr}")
             self.rCon.publish(f"{self.name}_usr", str(usr))
         except Exception as e:
-            self.logger.error("communicate_users failed with full error trace:")
+            self.logger.error("set_users failed with full error trace:")
             self.logger.error(e, exc_info=True)
             raise
 
     def update_all_pods(self, pubsub):
+        """
+
+        :param pubsub:
+        :return:
+        """
         # Horizontal Scaling
         if self.method == "muOpt-H":
             try:
@@ -247,7 +276,7 @@ class Autoscaler(object):
                                 self.horizontally_scale_deployment(tier_number, new_replicas)
                             self.last_r[f"tier{tier_number}"] = new_replicas
             except Exception as e:
-                self.logger.error("mainLoop failed with full error trace:")
+                self.logger.error("main_loop failed with full error trace:")
                 self.logger.error(e, exc_info=True)
         else:  # Vertical Scaling
             try:
@@ -260,7 +289,7 @@ class Autoscaler(object):
                         self.last_r = {}
                     for idx, request in enumerate(requests):
                         tier_number = idx + 1
-                        deployment_name = f"spring-test-app-tier{tier_number}"
+                        deployment_name = f"{webapp_keyword}-tier{tier_number}"
                         container_name = f"{deployment_name}-container"
                         cpu_request = f"{int(float(request) * 1000)}m"
                         cpu_limit = f"{int(float(request) * 1100)}m"
@@ -322,7 +351,7 @@ class Autoscaler(object):
         :param replicas:    The target number of replicas for the given tier.
         :return:
         """
-        deployment_name = f"spring-test-app-tier{tier}"
+        deployment_name = f"{webapp_keyword}-tier{tier}"
         deployment = self.apps_v1_api.read_namespaced_deployment(name=deployment_name, namespace='default')
 
         # Update and patch the deployment spec with desired replicas
@@ -333,11 +362,15 @@ class Autoscaler(object):
         return
 
     def get_cpu_str_by_vpa(self, vpa_name):
+        """
+
+        :param vpa_name:
+        :return:
+        """
         try:
             api_response = self.vpa_api.list_namespaced_custom_object(group="autoscaling.k8s.io", version="v1",
                                                                       namespace="default",
                                                                       plural="verticalpodautoscalers")
-
             vpa_data = None
             for vpa in api_response["items"]:
                 if vpa["metadata"]["name"] == vpa_name:
@@ -348,30 +381,20 @@ class Autoscaler(object):
                 container_recommendation = vpa_data['status']['recommendation']['containerRecommendations'][0]
 
                 # Extract CPU values
-                # cpu_lower_bound = container_recommendation['lowerBound']['cpu']
                 cpu_target = container_recommendation['target']['cpu']  # e.g. 1150m
-                # cpu_upper_bound = container_recommendation['upperBound']['cpu']
                 if len(cpu_target) > 1:
                     cpu_target_value = int(cpu_target[:-1]) / 1000  # e.g. 1.15
                 else:
                     cpu_target_value = cpu_target
-                # cpu_limit_millicores = int(cpu_target_millicores * 1.1)
-                # cpu_limit = f"{cpu_limit_millicores}m"
 
-                # Print results
-                print(f"VPA: {vpa_data['metadata']['name']}")
-                # print(f"  CPU Lower Bound: {cpu_lower_bound}")
-                print(f"  CPU Target: {cpu_target}")
-                # print(f"  CPU Limit: {cpu_limit}")
-                # print(f"  CPU Upper Bound: {cpu_upper_bound}")
                 self.logger.info(f"Recommended CPU for {vpa_name}: {cpu_target_value}")
-
                 return str(cpu_target_value)
             else:
                 print(f"VPA named {vpa_name} not found in the provided data.")
 
-        except client.ApiException as e:
-            print(f"Error retrieving VPA details: {e}")
+        except Exception as e:
+            self.logger.error("get_cpu_str_by_vpa failed with full error trace:")
+            self.logger.error(e, exc_info=True)
 
 
 if __name__ == '__main__':
