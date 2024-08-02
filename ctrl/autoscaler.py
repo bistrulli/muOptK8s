@@ -423,5 +423,5 @@ class Autoscaler(object):
 
 if __name__ == '__main__':
     args = get_cli()
-    ctrl = Autoscaler(name=args.name, method=args.method, julia_opt_path=Path(__file__).parent.joinpath("3tier.jl"),
+    ctrl = Autoscaler(name=args.name, method=args.method, webapp=args.webapp, julia_opt_path=Path(__file__).parent.joinpath("3tier.jl"),
                       ctrl_interval=args.wctrl, ut=args.utarget)
