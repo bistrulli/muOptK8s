@@ -1,5 +1,32 @@
-using Jedis,Printf,Ipopt,JuMP,MAT,ParameterJuMP,Mongoc,UUIDs
-include("getTR.jl")
+using Jedis,Printf,Ipopt,JuMP,MAT,ParameterJuMP,Mongoc,UUIDs,ArgParse,Logging,LogRoller
+#include("getTR.jl")
+
+# Define CLI Arg
+s = ArgParseSettings()
+
+@add_arg_table! s begin
+    "--name"
+        help = "The name of the organization"
+        arg_type = String
+        required = false
+        default = "test"
+    "--log_path"   
+        help = "Logfile path"
+        arg_type = String
+        required = false
+        default = "logs/test/test_opt.log"
+    "--ut"
+        help = "Utiliation target"
+        arg_type = Float64
+        required = false
+        default = 0.2
+end
+parsed_args = parse_args(ARGS, s)
+name = parsed_args["name"]
+log_path = parsed_args["log_path"]
+ut = parsed_args["ut"]
+
+logger = RollingLogger(log_path, 512000, 5, Logging.Info);
 
 
 wdir=pwd()
@@ -11,7 +38,7 @@ model = Model(Ipopt.Optimizer)
 #set_optimizer_attribute(model, "linear_solver", "pardiso")
 set_optimizer_attribute(model, "max_iter", 100000)
 #set_optimizer_attribute(model, "tol", 10^-10)
-#set_optimizer_attribute(model, "hessian_approximation", "limited-memory")
+set_optimizer_attribute(model, "hessian_approximation", "limited-memory")
 set_optimizer_attribute(model, "print_level", 0)
 
 jump=[  +1  +1  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  -1;
@@ -39,12 +66,11 @@ jump=[  +1  +1  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  
     ];
 
 delta=10^6
-maxNC=60
+maxNC=100
 maxNT=200
-ut=0.2
 
-MS=["MSauth","MSvalidateid","MSbookflights","MSupdateMiles","MScancelbooking",
-	"MSgetrewardmiles","MSqueryflights","MSviewprofile","MSupdateprofile"]
+MS=["auth","validateid","bookflights","updateMiles","cancelbooking",
+	"getrewardmiles","queryflights","viewprofile","updateprofile"]
 
 params = matread(@sprintf("%s/git/nodejsMicro/src/params.mat",homedir()))
 #MU=params["MU"]
@@ -193,22 +219,22 @@ MU[30]=1.0; #XBrowse_e;
 @NLconstraint(model,T[4]==Tm4*MU[5])
 @NLconstraint(model,T[5]==Tm5*MU[6])
 @NLconstraint(model,T[6]==delta*Tm6)
-@NLconstraint(model,T[7]==0.5*Tm7*MU[9])
+@NLconstraint(model,T[7]==ut*Tm7*MU[9])
 @NLconstraint(model,T[8]==delta*Tm8)
 @NLconstraint(model,T[9]==Tm9*MU[12])
 @NLconstraint(model,T[10]==delta*Tm10)
 @NLconstraint(model,T[11]==Tm11*MU[15])
 @NLconstraint(model,T[12]==delta*Tm12)
 @NLconstraint(model,T[13]==delta*Tm13)
-@NLconstraint(model,T[14]==0.5*X[18]/(X[18]+X[27])*TmGPS1*MU[20])
+@NLconstraint(model,T[14]==ut*X[18]/(X[18]+X[27])*TmGPS1*MU[20])
 @NLconstraint(model,T[15]==delta*Tm15)
-@NLconstraint(model,T[16]==0.5*X[21]/(X[21]+X[28])*TmGPS2*MU[23])
+@NLconstraint(model,T[16]==ut*X[21]/(X[21]+X[28])*TmGPS2*MU[23])
 @NLconstraint(model,T[17]==Tm17*MU[24])
 @NLconstraint(model,T[18]==delta*Tm18)
 @NLconstraint(model,T[19]==X[27]/(X[18]+X[27])*TmGPS1*MU[20])
 @NLconstraint(model,T[20]==X[28]/(X[21]+X[28])*TmGPS2*MU[23])
-@NLconstraint(model,T[21]==0.5*Tm21*MU[29])
-@NLconstraint(model,T[22]==0.5*Tm21*MU[29])
+@NLconstraint(model,T[21]==ut*Tm21*MU[29])
+@NLconstraint(model,T[22]==ut*Tm21*MU[29])
 
 
 @constraint(model,X[1]==X[2]+X[3]+X[6])
@@ -227,53 +253,60 @@ MU[30]=1.0; #XBrowse_e;
 #@constraint(model,(X[4])<=MU[4]*1.02*T[5])
 
 # Set up channels, publisher and subscriber clients
-channels = ["users"]
+channels=[@sprintf("%s_usr",name)]
 subscriber = Client(host=redisHost, port=6379)
 redis_cli=Client(host=redisHost, port=6379)
 
 # Begin the subscription
 stop_fn(msg) = msg[end] == "close";  # stop the subscription loop if the message matches
 
-println("started")
-set("ctrlStrt","1";client=redis_cli)
+println("Listening for messages on channel",channels)
+publish(@sprintf("%s_strt",name),"started"; client=redis_cli)
 
 global Ik=0
 global stimes=[]
 global outfile=string(UUIDs.uuid4())
 
 subscribe(channels...; stop_fn=stop_fn, client=subscriber) do msg
-	#w=parse(Float64, msg[end])
-	w=parse(Float64,get("users";client=redis_cli))
-	set_value(C,w)
-	global stimes
-	global outfile
+	global logger
+    with_logger(logger) do
+		#w=parse(Float64, msg[end])
+		@info "recMsg" msg[end] 
+		w=round(parse(Float64,msg[end]))
+		#w=parse(Float64,get("users";client=redis_cli))
+		set_value(C,w)
+		global stimes
+		global outfile
 
-    #@objective(model,Max,0.5*(T[1])*1.0/(0.75*w)-0.5*(sum(NC))/(maxNC*9+0*maxNT*9))
-    @objective(model,Max,T[1])
-    stime=@elapsed JuMP.optimize!(model)
-    push!(stimes,stime)
-    
-    global status=termination_status(model)
-    if(status!=MOI.LOCALLY_SOLVED && status!=MOI.ALMOST_LOCALLY_SOLVED)
-        error(status)
-    end
+	    @objective(model,Max,(T[1])/(0.71*w)-(sum(NC))/(maxNC*9))
+	    #@objective(model,Max,1.0*T[1]-0.0*(sum(NC)/(maxNC*9)))
+	    stime=@elapsed JuMP.optimize!(model)
+	    push!(stimes,stime)
+	    
+	    global status=termination_status(model)
+	    if(status!=MOI.LOCALLY_SOLVED && status!=MOI.ALMOST_LOCALLY_SOLVED)
+	        error(status)
+	    end
 
-	Tmk=getTr(mongoClient,10,"MSauth")
-	if(typeof(Tmk)!=Nothing)
-		global Ik=Ik+((0.75*w)-Tmk)
-	else
-		println("error")
-		global Ik=0
+		# Tmk=getTr(mongoClient,10,"MSauth")
+		# if(typeof(Tmk)!=Nothing)
+		# 	global Ik=Ik+((0.71*w)-Tmk)
+		# else
+		# 	println("error")
+		# 	global Ik=0
+		# end
+
+		# for m=1:length(NC)
+		# 	set(@sprintf("%s_hw",MS[m]),@sprintf("%.3f",value(NC[m+1])+0.0005*Ik);client=redis_cli)
+		# end
+
+		@info "New Replica" MS value.(NC)
+		publish(@sprintf("%s_srv",name),@sprintf("%s\$%s",join(MS,";"),join(value.(NC),";")); client=redis_cli)
+		
+		# matwrite(@sprintf("./data/%s.mat",outfile), Dict(
+	    #     "stimes" => stimes
+	    # );)
 	end
-
-	for m=1:length(NC)
-		set(@sprintf("%s_hw",MS[m]),@sprintf("%.3f",value(NC[m+1])+0.0005*Ik);client=redis_cli)
-	end
-	
-	matwrite(@sprintf("./data/%s.mat",outfile), Dict(
-        "stimes" => stimes
-    );)
-	
 end
 
 
