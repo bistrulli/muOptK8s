@@ -1,0 +1,74 @@
+G
+"acmeair_1.lqn"
+0.0001
+500
+1
+0.5
+-1
+
+# Processors declaration, with multiplicity 
+P 0
+p ProcClient f m 1000
+p ProcMSauth f m 1
+p ProcMSvalidateid f m 1
+p ProcMSviewprofile f m 1
+p ProcMSupdateprofile f m 1
+p ProcMSupdateMiles f m 1
+p ProcMSbookflights f m 1
+p ProcMScancelbooking f m 1
+p ProcMSqueryflights f m 1
+p ProcMSgetrewardmiles f m 1
+-1
+
+# Tasks declaration
+T 0
+t client r clientEntry -1 ProcClient m 2
+t MSauth n MSauthEntry -1 ProcMSauth m 2000
+t MSvalidateid n MSvalidateidEntry -1 ProcMSvalidateid m 2000
+t MSviewprofile n MSviewprofileEntry -1 ProcMSviewprofile m 2000
+t MSupdateprofile n MSupdateprofileEntry -1 ProcMSupdateprofile m 2000
+t MSupdateMiles n MSupdateMilesEntry -1 ProcMSupdateMiles m 2000
+t MSbookflights n MSbookflightsEntry -1 ProcMSbookflights m 2000
+t MScancelbooking n MScancelbookingEntry -1 ProcMScancelbooking m 2000
+t MSqueryflights n MSqueryflightsEntry -1 ProcMSqueryflights m 2000
+t MSgetrewardmiles n MSgetrewardmilesEntry -1 ProcMSgetrewardmiles m 2000
+-1
+
+# Entries declaration
+E 0
+s clientEntry 1.0 -1
+y clientEntry MSviewprofileEntry 2.0 -1
+y clientEntry MSupdateprofileEntry 1.0 -1
+y clientEntry MSbookflightsEntry 1.0 -1
+y clientEntry MScancelbookingEntry 2.0 -1
+y clientEntry MSqueryflightsEntry 1.0 -1
+s MSauthEntry 0.039025 -1
+y MSauthEntry MSvalidateidEntry 1.0 -1
+s MSvalidateidEntry 0.024734 -1
+s MSviewprofileEntry 0.033605 -1
+s MSupdateprofileEntry 0.049099 -1
+s MSupdateMilesEntry 0.013853 -1
+s MSbookflightsEntry 0.030366 -1
+y MSbookflightsEntry MSupdateMilesEntry 2.0 -1
+y MSbookflightsEntry MSgetrewardmilesEntry 2.0 -1
+s MScancelbookingEntry 0.025745 -1
+y MScancelbookingEntry MSupdateMilesEntry 1.0 -1
+y MScancelbookingEntry MSgetrewardmilesEntry 1.0 -1
+s MSqueryflightsEntry 0.026019 -1
+s MSgetrewardmilesEntry 0.012775 -1
+y clientEntry MSauthEntry 1.0 -1
+-1
+
+# 1. Solver settings
+#! v 1.0e5           	# fast rate to approximate instantaneous events
+#! solver ode        	# ODE analysis - solver sim will run simulation
+#! confidence_level 0.95
+#! confidence_percent_error 0.01
+
+# 2. Output settings
+#! throughput: clientEntry MSauthEntry MSviewprofileEntry  MSvalidateidEntry MSupdateprofileEntry MSupdateMilesEntry MSbookflightsEntry MScancelbookingEntry MSqueryflightsEntry MSgetrewardmilesEntry
+#! utilization: clientEntry MSauthEntry MSviewprofileEntry  MSvalidateidEntry MSupdateprofileEntry MSupdateMilesEntry MSbookflightsEntry MScancelbookingEntry MSqueryflightsEntry MSgetrewardmilesEntry
+#! responsetime: clientEntry MSauthEntry MSviewprofileEntry  MSvalidateidEntry MSupdateprofileEntry MSupdateMilesEntry MSbookflightsEntry MScancelbookingEntry MSqueryflightsEntry MSgetrewardmilesEntry -1
+
+# 3. Export settings
+#! export csv

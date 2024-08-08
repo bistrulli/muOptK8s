@@ -1,0 +1,30 @@
+throughput,entry,clientEntry,2.867167703449698
+throughput,entry,MSauthEntry,2.8671675255853506
+throughput,entry,MSviewprofileEntry,5.734335667524158
+throughput,entry,MSvalidateidEntry,2.867167524654028
+throughput,entry,MSupdateprofileEntry,2.867167995722496
+throughput,entry,MSupdateMilesEntry,11.468670783461794
+throughput,entry,MSbookflightsEntry,2.8671677187399247
+throughput,entry,MScancelbookingEntry,5.7343352607620535
+throughput,entry,MSqueryflightsEntry,2.8671675496528493
+throughput,entry,MSgetrewardmilesEntry,11.468670584159966
+proc utilization,act,clientEntry,2.8671677034497054
+proc utilization,act,MSauthEntry,0.11189121268596953
+proc utilization,act,MSviewprofileEntry,0.19270235010714942
+proc utilization,act,MSvalidateidEntry,0.07091652155479272
+proc utilization,act,MSupdateprofileEntry,0.1407750814219788
+proc utilization,act,MSupdateMilesEntry,0.15887549636329623
+proc utilization,act,MSbookflightsEntry,0.08706441494725656
+proc utilization,act,MScancelbookingEntry,0.14763046128831908
+proc utilization,act,MSqueryflightsEntry,0.0746008324744176
+proc utilization,act,MSgetrewardmilesEntry,0.14651226671264367
+response time,entry,clientEntry,1.395105000376257
+response time,entry,MSauthEntry,0.06381899999196386
+response time,entry,MSviewprofileEntry,0.03362499999986781
+response time,entry,MSvalidateidEntry,0.02475400000000121
+response time,entry,MSupdateprofileEntry,0.04911899999995053
+response time,entry,MSupdateMilesEntry,0.013868000000034438
+response time,entry,MSbookflightsEntry,0.0386860908347275
+response time,entry,MScancelbookingEntry,0.07501095522939465
+response time,entry,MSqueryflightsEntry,0.026039000000054727
+response time,entry,MSgetrewardmilesEntry,0.01279000000003405
