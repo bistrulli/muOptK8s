@@ -69,6 +69,7 @@ class Autoscaler(object):
         self.name = name
         self.ctrl_interval = ctrl_interval
         self.ut = ut
+        self.method = method
 
         # Get the webapp configuration
         self.webapp = webapp
@@ -92,9 +93,8 @@ class Autoscaler(object):
         self.init_redis()
         self.init_kubernetes()
 
-        # Autoscaler choice
-        self.method = method
 
+        # Autoscaler choice
         if self.method == "muOpt":
             self.logger.info("Running the \'muOpt\' autoscaler (in vertical scaling mode).")
             self.start_julia_opt()
@@ -279,7 +279,7 @@ class Autoscaler(object):
         :return:
         """
         # Horizontal Scaling
-        self.logger.info(self.method)
+        self.logger.info(f"self.method: {self.method}")
         if self.method == "muOpt-H":
             try:
                 for m in pubsub.listen():
