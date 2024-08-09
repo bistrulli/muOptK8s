@@ -9,20 +9,20 @@ import argparse
 from kubernetes import client, config
 from kubernetes.client import ApiException
 import numpy as np
+#import Webapp
 
 
-webapp_keyword = 'spring-test-app'
-n_tiers = 3
-acmeair_vpas = ["vpa-main", "vpa-auth",
-                "vpa-byidget", "vpa-byidpost", "vpa-updatemiles", "vpa-validateid",
-                "vpa-bookflights", "vpa-bybookingnumber", "vpa-byuser", "vpa-cancelbooking",
-                "vpa-getrewardmiles", "vpa-queryflights"]
 
 acmeair_keywords = ["acmeair-main", "acmeair-auth",
                        "acmeair-customer-byidget", "acmeair-customer-byidpost", "acmeair-customer-updatemiles", "acmeair-customer-validateid",
                        "acmeair-booking-bookflights", "acmeair-booking-bybookingnumber", "acmeair-booking-byuser", "acmeair-booking-cancelbooking",
                        "acmeair-flight-getrewardmiles", "acmeair-flight-queryflights"]
+acmeair_vpas = ["vpa-main", "vpa-auth",
+                "vpa-byidget", "vpa-byidpost", "vpa-updatemiles", "vpa-validateid",
+                "vpa-bookflights", "vpa-bybookingnumber", "vpa-byuser", "vpa-cancelbooking",
+                "vpa-getrewardmiles", "vpa-queryflights"]
 
+three_tier_keywords = ["spring-test-app-1", "spring-test-app-2", "spring-test-app-3"]
 three_tier_vpas = ["tier1-vpa", "tier2-vpa", "tier3-vpa"]
 
 def get_cli():
@@ -63,13 +63,24 @@ class Autoscaler(object):
     ctrl_interval = None
     last_r = None
     ut = None
+    keywords = None
+    vpas = None
 
     def __init__(self, name, method, webapp, julia_opt_path=None, ctrl_interval=None, ut=None):
         self.name = name
-        self.method = method
-        self.webapp = webapp
         self.ctrl_interval = ctrl_interval
         self.ut = ut
+
+        # Get the webapp configuration
+        self.webapp = webapp
+        if self.webapp == "Acmeair":
+            self.keywords = acmeair_keywords
+            self.vpas = acmeair_vpas
+        else:
+            self.keywords = three_tier_keywords
+            self.vpas = three_tier_vpas
+
+
         if not julia_opt_path.is_file():
             self.logger.error("julia_opt_path does not exist")
             raise ValueError("julia_opt_path does not exist")
@@ -83,6 +94,7 @@ class Autoscaler(object):
         self.init_kubernetes()
 
         # Autoscaler choice
+        self.method = method
         if self.method == "muOpt":
             self.logger.info("Running the \'muOpt\' autoscaler (in vertical scaling mode).")
             self.start_julia_opt()
@@ -159,13 +171,9 @@ class Autoscaler(object):
         :return:
         """
         self.logger.info("Inside vpa_tracking")
-        if self.webapp == "Acmeair":
-            vpas_list = acmeair_vpas
-        else:
-            vpas_list = three_tier_vpas
         while True:
             reqs = []
-            for vpa_name in vpas_list:
+            for vpa_name in self.vpas:
                 reqs.append(self.get_cpu_str_by_vpa(vpa_name))
             combined_reqs = "_".join(reqs)
             channel_name = f"{self.name}_srv"
@@ -218,7 +226,7 @@ class Autoscaler(object):
             self.srvPubSub.unsubscribe()
             self.opt_proc.terminate()
 
-    def get_pod_names_by_deployment(self, deployment_name):
+    def get_pod_names_by_deployment(self, deployment_name, namespace='default'):
         """
         Get the list of pods relative to a deployment.
         :param deployment_name:     The deployment name.
@@ -226,7 +234,7 @@ class Autoscaler(object):
         """
         pods = []
         try:
-            all_pods = self.core_v1_api.list_namespaced_pod(namespace='default')
+            all_pods = self.core_v1_api.list_namespaced_pod(namespace=namespace)
             for pod in all_pods.items:
                 pod_name = pod.metadata.name
                 if deployment_name in pod_name:
@@ -281,23 +289,24 @@ class Autoscaler(object):
                     if self.last_r is None:
                         self.last_r = {}
                     for idx, r in enumerate(replicas):
+                        deployment_name = f"{self.keywords[idx]}-deployment"
                         tier_number = idx + 1
                         new_replicas = np.ceil(float(r))
-                        self.logger.info(f"Updating tier{tier_number} to {new_replicas} replicas")
-                        if f"tier{tier_number}" not in self.last_r:
-                            self.last_r[f"tier{tier_number}"] = new_replicas
-                            self.horizontally_scale_deployment(tier_number, new_replicas)
+                        self.logger.info(f"Updating deployment {deployment_name} to {new_replicas} replicas")
+                        if deployment_name not in self.last_r:
+                            self.last_r[deployment_name] = new_replicas
+                            self.horizontally_scale_deployment(deployment_name, new_replicas)
                         else:
-                            if self.last_r[f"tier{tier_number}"] > new_replicas:
-                                self.logger.info(f"Downscaling tier{tier_number} " + str(
-                                    self.last_r[f"tier{tier_number}"]) + f"->{new_replicas}")
-                                self.horizontally_scale_deployment(tier_number, new_replicas)
-                            elif self.last_r[f"tier{tier_number}"] < new_replicas:
+                            if self.last_r[deployment_name] > new_replicas:
+                                self.logger.info(f"Downscaling {deployment_name} " + str(
+                                    self.last_r[deployment_name]) + f"->{new_replicas}")
+                                self.horizontally_scale_deployment(deployment_name, new_replicas)
+                            elif self.last_r[deployment_name] < new_replicas:
                                 self.logger.info(
-                                    f"Upscaling tier{tier_number} " + str(
-                                        self.last_r[f"tier{tier_number}"]) + f"->{float(r)}")
-                                self.horizontally_scale_deployment(tier_number, new_replicas)
-                            self.last_r[f"tier{tier_number}"] = new_replicas
+                                    f"Upscaling {deployment_name} " + str(
+                                        self.last_r[deployment_name]) + f"->{float(r)}")
+                                self.horizontally_scale_deployment(deployment_name, new_replicas)
+                            self.last_r[{deployment_name}] = new_replicas
             except Exception as e:
                 self.logger.error("main_loop failed with full error trace:")
                 self.logger.error(e, exc_info=True)
@@ -311,10 +320,8 @@ class Autoscaler(object):
                     if self.last_r is None:
                         self.last_r = {}
                     for idx, request in enumerate(requests):
-                        #tier_number = idx + 1
-                        deployment_name = f"{acmeair_keywords[idx]}-deployment"
-                        #deployment_name = f"{webapp_keyword}-tier{tier_number}"
-                        container_name = f"{acmeair_keywords[idx]}-container"
+                        deployment_name = f"{self.keywords[idx]}-deployment"
+                        container_name = f"{self.keywords[idx]}-container"
                         cpu_request = f"{int(float(request) * 1000)}m"
                         cpu_limit = f"{int(float(request) * 1100)}m"
                         self.logger.info(
@@ -329,7 +336,7 @@ class Autoscaler(object):
                 self.logger.error("update_all_pods failed with full error trace:")
                 self.logger.error(e, exc_info=True)
 
-    def vertically_scale_pod(self, pod_name, container_name, cpu_request, cpu_limit):
+    def vertically_scale_pod(self, pod_name, container_name, cpu_request, cpu_limit, namespace='default'):
         """
         Vertically scale a pod.
 
@@ -358,7 +365,7 @@ class Autoscaler(object):
         }
         try:
             self.logger.info(f"Updating pod {pod_name} to CPU request {cpu_request} and CPU limit {cpu_limit}")
-            self.core_v1_api.patch_namespaced_pod(name=pod_name, namespace="default", body=patch_body)
+            self.core_v1_api.patch_namespaced_pod(name=pod_name, namespace=namespace, body=patch_body)
         except ApiException as e:
             if e.status == 403:
                 print(f"Insufficient permissions to access pod '{pod_name}'.")
@@ -367,7 +374,7 @@ class Autoscaler(object):
             else:
                 print(f"Failed to scale pod: {e}")
 
-    def horizontally_scale_deployment(self, tier, replicas):
+    def horizontally_scale_deployment(self, deployment_name, replicas, namespace='default'):
         """
         Scale a given tier to a provided target number of replicas.
 
@@ -375,17 +382,16 @@ class Autoscaler(object):
         :param replicas:    The target number of replicas for the given tier.
         :return:
         """
-        deployment_name = f"{webapp_keyword}-tier{tier}"
-        deployment = self.apps_v1_api.read_namespaced_deployment(name=deployment_name, namespace='default')
+        deployment = self.apps_v1_api.read_namespaced_deployment(name=deployment_name, namespace=namespace)
 
         # Update and patch the deployment spec with desired replicas
         deployment.spec.replicas = replicas
-        self.apps_v1_api.patch_namespaced_deployment(name=deployment_name, namespace='default', body=deployment)
+        self.apps_v1_api.patch_namespaced_deployment(name=deployment_name, namespace=namespace, body=deployment)
 
         self.logger.info(f"Deployment '{deployment_name}' scaled to {deployment.spec.replicas} replicas.")
         return
 
-    def get_cpu_str_by_vpa(self, vpa_name):
+    def get_cpu_str_by_vpa(self, vpa_name, namespace='default'):
         """
 
         :param vpa_name:
@@ -393,7 +399,7 @@ class Autoscaler(object):
         """
         try:
             api_response = self.vpa_api.list_namespaced_custom_object(group="autoscaling.k8s.io", version="v1",
-                                                                      namespace="default",
+                                                                      namespace=namespace,
                                                                       plural="verticalpodautoscalers")
             vpa_data = None
             for vpa in api_response["items"]:
@@ -423,5 +429,11 @@ class Autoscaler(object):
 
 if __name__ == '__main__':
     args = get_cli()
-    ctrl = Autoscaler(name=args.name, method=args.method, webapp=args.webapp, julia_opt_path=Path(__file__).parent.joinpath("3tier.jl"),
+
+    if args.webapp == "Acmeair":
+        julia_path = "acmeCtrl.jl"
+    else:
+        julia_path = "3tier.jl"
+
+    ctrl = Autoscaler(name=args.name, method=args.method, webapp=args.webapp, julia_opt_path=Path(__file__).parent.joinpath(julia_path),
                       ctrl_interval=args.wctrl, ut=args.utarget)
