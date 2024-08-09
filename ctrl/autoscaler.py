@@ -306,7 +306,7 @@ class Autoscaler(object):
                             elif self.last_r[deployment_name] < new_replicas:
                                 self.logger.info(
                                     f"Upscaling {deployment_name} " + str(
-                                        self.last_r[deployment_name]) + f"->{float(r)}")
+                                        self.last_r[deployment_name]) + f"->{float(replicas[idx])}")
                                 self.horizontally_scale_deployment(deployment_name, new_replicas)
                             self.last_r[deployment_name] = new_replicas
             except Exception as e:
