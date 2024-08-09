@@ -308,7 +308,7 @@ class Autoscaler(object):
                                     f"Upscaling {deployment_name} " + str(
                                         self.last_r[deployment_name]) + f"->{float(r)}")
                                 self.horizontally_scale_deployment(deployment_name, new_replicas)
-                            self.last_r[{deployment_name}] = new_replicas
+                            self.last_r[deployment_name] = new_replicas
             except Exception as e:
                 self.logger.error("main_loop failed with full error trace:")
                 self.logger.error(e, exc_info=True)
