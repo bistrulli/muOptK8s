@@ -72,7 +72,7 @@ maxNT=200
 MS=["auth","validateid","bookflights","updateMiles","cancelbooking",
 	"getrewardmiles","queryflights","viewprofile","updateprofile"]
 
-params = matread(@sprintf("%s/git/nodejsMicro/src/params.mat",homedir()))
+#params = matread(@sprintf("%s/git/nodejsMicro/src/params.mat",homedir()))
 #MU=params["MU"]
 #MU=MU*1.0
 
