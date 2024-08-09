@@ -94,6 +94,7 @@ class Autoscaler(object):
 
         # Autoscaler choice
         self.method = method
+
         if self.method == "muOpt":
             self.logger.info("Running the \'muOpt\' autoscaler (in vertical scaling mode).")
             self.start_julia_opt()
@@ -278,6 +279,7 @@ class Autoscaler(object):
         :return:
         """
         # Horizontal Scaling
+        self.logger.info(self.method)
         if self.method == "muOpt-H":
             try:
                 for m in pubsub.listen():
