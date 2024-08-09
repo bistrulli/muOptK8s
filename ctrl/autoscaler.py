@@ -12,7 +12,6 @@ import numpy as np
 #import Webapp
 
 
-
 acmeair_keywords = ["acmeair-main", "acmeair-auth",
                        "acmeair-customer-byidget", "acmeair-customer-byidpost", "acmeair-customer-updatemiles", "acmeair-customer-validateid",
                        "acmeair-booking-bookflights", "acmeair-booking-bybookingnumber", "acmeair-booking-byuser", "acmeair-booking-cancelbooking",
@@ -284,14 +283,16 @@ class Autoscaler(object):
                 for m in pubsub.listen():
                     if 'pmessage' != m['type']:
                         continue
-                    replicas = m['data'].split("_")
-
+                    self.logger.info(m['data'])
+                    res_ctrl = m['data'].split("$")
+                    ms_list = res_ctrl[0].split(";")
+                    replicas = res_ctrl[1].split(";")
+                    #replicas = m['data'].split("_")
                     if self.last_r is None:
                         self.last_r = {}
-                    for idx, r in enumerate(replicas):
-                        deployment_name = f"{self.keywords[idx]}-deployment"
-                        tier_number = idx + 1
-                        new_replicas = np.ceil(float(r))
+                    for idx, ms in enumerate(ms_list):
+                        deployment_name = f"{ms}-deployment"
+                        new_replicas = np.ceil(float(replicas[idx]))
                         self.logger.info(f"Updating deployment {deployment_name} to {new_replicas} replicas")
                         if deployment_name not in self.last_r:
                             self.last_r[deployment_name] = new_replicas

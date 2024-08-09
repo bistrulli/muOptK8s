@@ -69,8 +69,11 @@ delta=10^6
 maxNC=100
 maxNT=200
 
-MS=["auth","validateid","bookflights","updateMiles","cancelbooking",
-	"getrewardmiles","queryflights","viewprofile","updateprofile"]
+#MS=["auth","validateid","bookflights","updateMiles","cancelbooking",
+#	"getrewardmiles","queryflights","viewprofile","updateprofile"]
+
+MS=["acmeair-auth","acmeair-customer-validateid","acmeair-booking-bookflights","acmeair-customer-updatemiles","acmeair-booking-cancelbooking",
+	"acmeair-flight-getrewardmiles","acmeair-flight-queryflights","acmeair-customer-byidget","acmeair-customer-byidpost"]
 
 #params = matread(@sprintf("%s/git/nodejsMicro/src/params.mat",homedir()))
 #MU=params["MU"]
