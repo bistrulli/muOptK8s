@@ -1,5 +1,5 @@
 G
-"acmeair_1.lqn"
+"acmeair_5.lqn"
 0.0001
 500
 1
@@ -9,13 +9,13 @@ G
 # Processors declaration, with multiplicity 
 P 0
 p ProcClient f m 1000
-p ProcMSauth f m 1
+p ProcMSauth f m 2
 p ProcMSvalidateid f m 1
-p ProcMSviewprofile f m 1
-p ProcMSupdateprofile f m 1
+p ProcMSviewprofile f m 6
+p ProcMSupdateprofile f m 2
 p ProcMSupdateMiles f m 1
 p ProcMSbookflights f m 1
-p ProcMScancelbooking f m 1
+p ProcMScancelbooking f m 4
 p ProcMSqueryflights f m 1
 p ProcMSgetrewardmiles f m 1
 -1

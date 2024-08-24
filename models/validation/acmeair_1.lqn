@@ -1,5 +1,5 @@
 G
-"acmeair_5.lqn"
+"acmeair_1.lqn"
 0.0001
 500
 1
@@ -22,7 +22,7 @@ p ProcMSgetrewardmiles f m 1
 
 # Tasks declaration
 T 0
-t client r clientEntry -1 ProcClient m 10
+t client r clientEntry -1 ProcClient m 35
 t MSauth n MSauthEntry -1 ProcMSauth m 2000
 t MSvalidateid n MSvalidateidEntry -1 ProcMSvalidateid m 2000
 t MSviewprofile n MSviewprofileEntry -1 ProcMSviewprofile m 2000

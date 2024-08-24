@@ -8,30 +8,30 @@ G
 
 # Processors declaration, with multiplicity 
 P 0
-p ProcClient f m 326
-p ProcMSauth f m 10
-p ProcMSvalidateid f m 7
-p ProcMSviewprofile f m 16
-p ProcMSupdateprofile f m 12
-p ProcMSupdateMiles f m 14
-p ProcMSbookflights f m 8
-p ProcMScancelbooking f m 13
-p ProcMSqueryflights f m 7
-p ProcMSgetrewardmiles f m 13
+p ProcClient f m $USERS
+p ProcMSauth f m $ProcMSauth
+p ProcMSvalidateid f m $ProcMSvalidateid
+p ProcMSviewprofile f m $ProcMSviewprofile
+p ProcMSupdateprofile f m $ProcMSupdateprofile
+p ProcMSupdateMiles f m $ProcMSupdateMiles
+p ProcMSbookflights f m $ProcMSbookflights
+p ProcMScancelbooking f m $ProcMScancelbooking
+p ProcMSqueryflights f m $ProcMSqueryflights
+p ProcMSgetrewardmiles f m $ProcMSgetrewardmiles
 -1
 
 # Tasks declaration
 T 0
-t client r clientEntry -1 ProcClient m 326
-t MSauth n MSauthEntry -1 ProcMSauth m 326
-t MSvalidateid n MSvalidateidEntry -1 ProcMSvalidateid m 326
-t MSviewprofile n MSviewprofileEntry -1 ProcMSviewprofile m 326
-t MSupdateprofile n MSupdateprofileEntry -1 ProcMSupdateprofile m 326
-t MSupdateMiles n MSupdateMilesEntry -1 ProcMSupdateMiles m 326
-t MSbookflights n MSbookflightsEntry -1 ProcMSbookflights m 326
-t MScancelbooking n MScancelbookingEntry -1 ProcMScancelbooking m 326
-t MSqueryflights n MSqueryflightsEntry -1 ProcMSqueryflights m 326
-t MSgetrewardmiles n MSgetrewardmilesEntry -1 ProcMSgetrewardmiles m 326
+t client r clientEntry -1 ProcClient m $USERS
+t MSauth n MSauthEntry -1 ProcMSauth m $USERS
+t MSvalidateid n MSvalidateidEntry -1 ProcMSvalidateid m $USERS
+t MSviewprofile n MSviewprofileEntry -1 ProcMSviewprofile m $USERS
+t MSupdateprofile n MSupdateprofileEntry -1 ProcMSupdateprofile m $USERS
+t MSupdateMiles n MSupdateMilesEntry -1 ProcMSupdateMiles m $USERS
+t MSbookflights n MSbookflightsEntry -1 ProcMSbookflights m $USERS
+t MScancelbooking n MScancelbookingEntry -1 ProcMScancelbooking m $USERS
+t MSqueryflights n MSqueryflightsEntry -1 ProcMSqueryflights m $USERS
+t MSgetrewardmiles n MSgetrewardmilesEntry -1 ProcMSgetrewardmiles m $USERS
 -1
 
 # Entries declaration

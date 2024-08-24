@@ -149,63 +149,30 @@ Tm2=@NLexpression(model,-(-NC[2]-X[12]+sqrt((-NC[2]+X[12])^2+alpha))/2)
 
 #p.P_profile2*X(2)/(X(2)+X(3))*p.MU(44)*min(X(44),p.NC(9));
 Tm3=@NLexpression(model,delta*-(-NC[9]-X[44]+sqrt((-NC[9]+X[44])^2+alpha))/2)
-#@variable(model,Tm3>=0)
-#@constraint(model,Tm3<=X[4])
-#@constraint(model,Tm3<=NT[3]-X[5])
 
 #min(X(5),p.NC(3));
 Tm4=@NLexpression(model,-(-NC[3]-X[5]+sqrt((-NC[3]+X[5])^2+alpha))/2)
-#@variable(model,Tm4>=0)
-#@constraint(model,Tm4<=X[5])
-#@constraint(model,Tm4<=ut*NC[3])
 
 #min(X(48),NC(10));
 Tm5=@NLexpression(model,-(-NC[10]-X[48]+sqrt((-NC[10]+X[48])^2+alpha))/2)
-#@variable(model,Tm5>=0)
-#@constraint(model,Tm5<=X[6])
-#@constraint(model,Tm5<=ut*NC[2])
 
 #min(X(41),p.NC(8));
 Tm6=@NLexpression(model,-(-NC[8]-X[41]+sqrt((-NC[8]+X[41])^2+alpha))/2)
-#@variable(model,Tm6>=0)
-#@constraint(model,Tm6<=NT[9]-X[9])
-#@constraint(model,Tm6<=X[8])
 
 #min(X(22),p.NC(4));
 Tm7=@NLexpression(model,-(-NC[4]-X[22]+sqrt((-NC[4]+X[22])^2+alpha))/2)
-#@variable(model,Tm7>=0)
-#@constraint(model,Tm7<=ut*NC[9])
-#@constraint(model,Tm7<=X[9])
 
 #min(X(32),p.NC(6));
 Tm8=@NLexpression(model,-(-NC[6]-X[32]+sqrt((-NC[6]+X[32])^2+alpha))/2)
-#@variable(model,Tm8>=0)
-#@constraint(model,Tm8<=NT[10]-X[12])
-#@constraint(model,Tm8<=X[11])
-
-#p.P_validate*X(10)/(X(10))*p.delta*min(X(10),p.NT(2)-(X(11)+X(12)));
-Tm9=X[10]
-#@variable(model,Tm9>=0)
-#@constraint(model,Tm9<=ut*NC[10])
-#@constraint(model,Tm9<=X[12])
 
 #min(X(15),p.NC(3));
 Tm10=@NLexpression(model,-(-NC[3]-X[15]+sqrt((-NC[3]+X[15])^2+alpha))/2)
-#@variable(model,Tm10>=0)
-#@constraint(model,Tm10<=NT[8]-X[15])
-#@constraint(model,Tm10<=X[14])
-
-#p.delta*X(14);
-Tm10=X[14]
-
-#p.delta*min(X(17));
-Tm11=X[17]
 
 #min(X(25),p.NC(5));
-Tm12=@NLexpression(model,-(-NC[5]-X[25]+sqrt((-NC[5]+X[25])^2+alpha))/2)
+Tm13=@NLexpression(model,-(-NC[5]-X[25]+sqrt((-NC[5]+X[25])^2+alpha))/2)
 
 #min(X(36),p.NC(7));
-Tm13=@NLexpression(model,-(-NC[7]-X[36]+sqrt((-NC[7]+X[36])^2+alpha))/2)
+Tm14=@NLexpression(model,-(-NC[7]-X[36]+sqrt((-NC[7]+X[36])^2+alpha))/2)
 
 @constraint(model,  T[1]==MU[9]*X[9])
 @NLconstraint(model,T[2]==MU[12]*Tm2)
@@ -216,12 +183,12 @@ Tm13=@NLexpression(model,-(-NC[7]-X[36]+sqrt((-NC[7]+X[36])^2+alpha))/2)
 @NLconstraint(model,T[7]==Tm7*MU[22])
 @NLconstraint(model,T[8]==X[7]/(X[7]+X[8])*MU[32]*Tm8)
 @NLconstraint(model,T[9]==X[8]/(X[7]+X[8])*MU[32]*Tm8)
-@NLconstraint(model,T[10]==delta*Tm9)
+@NLconstraint(model,T[10]==delta*X[10])
 @NLconstraint(model,T[11]==Tm10*MU[15])
 @NLconstraint(model,T[12]==0)
-@NLconstraint(model,T[13]==delta*Tm10)
+@NLconstraint(model,T[13]==delta*X[14])
 @NLconstraint(model,T[14]==0)
-@NLconstraint(model,T[15]==delta*Tm11)
+@NLconstraint(model,T[15]==delta*X[17])
 @NLconstraint(model,T[16]==MU[25]*X[18]/(X[18]+X[19]+X[30])*Tm12)
 @NLconstraint(model,T[17]==MU[25]*X[19]/(X[18]+X[19]+X[30])*Tm12)
 @NLconstraint(model,T[18]==X[20]/(X[20]+X[21]+X[31])*MU[36]*Tm13)
@@ -248,87 +215,39 @@ Tm13=@NLexpression(model,-(-NC[7]-X[36]+sqrt((-NC[7]+X[36])^2+alpha))/2)
 @NLconstraint(model,T[39]==delta*X[47])
 @NLconstraint(model,T[40]==0)
 
-@constraint(model,C==sum(X[1:9]))
-@constraint(model,X[1]==X[10]+X[11]+X[12])
-@constraint(model,X[11]==sum(X[[14,15]]))
-@constraint(model,X[2]+X[3]==sum(X[[43,44]]))
-@constraint(model,X[4]==X[47]+X[48])
-@constraint(model,X[5]==X[40]+X[41])
-@constraint(model,X[6]==sum(X[17:22]))
-@constraint(model,X[7]+X[8]==sum(X[29:32]))
-@constraint(model,X[11]==X[14]+X[15])
-@constraint(model,X[18]+X[19]==sum(X[35:36]))
-@constraint(model,X[20]+X[21]==sum(X[35:36]))
-@constraint(model,X[30]==sum(X[24:25]))
-# @constraint(model,X[16]==X[17]+X[18]+X[21]+X[24])
-# @constraint(model,X[18]+X[27]==X[19]+X[20])
-# @constraint(model,X[21]+X[28]==X[22]+X[23])
-# @constraint(model,X[25]==X[26]+X[27]+X[28]+X[29])
 
-#-----response time constraints
-#@constraint(model,(X[1]+X[5])<=(MU[5]+P_c1*MU[3]+P_c2*MU[4])*1.02*T[1])
-#@constraint(model,(X[3])<=MU[3]*1.02*T[4])
-#@constraint(model,(X[4])<=MU[4]*1.02*T[5])
-
-# Set up channels, publisher and subscriber clients
-channels=[@sprintf("%s_usr",name)]
-subscriber = Client(host=redisHost, port=6379)
-redis_cli=Client(host=redisHost, port=6379)
-
-# Begin the subscription
-stop_fn(msg) = msg[end] == "close";  # stop the subscription loop if the message matches
-
-println("Listening for messages on channel",channels)
-publish(@sprintf("%s_strt",name),"started"; client=redis_cli)
 
 global Ik=0
 global stimes=[]
 global outfile=string(UUIDs.uuid4())
 
-subscribe(channels...; stop_fn=stop_fn, client=subscriber) do msg
-	global logger
-    with_logger(logger) do
-		#w=parse(Float64, msg[end])
-		@info "recMsg" msg[end] 
-		w=round(parse(Float64,msg[end]))
-		#w=parse(Float64,get("users";client=redis_cli))
-		set_value(C,w)
-		global stimes
-		global outfile
 
-	    #@objective(model,Max,(T[1]))
-	    #@objective(model,Max,1.0*T[1]-0.0*(sum(NC)/(maxNC*9)))
-	    stime=@elapsed JuMP.optimize!(model)
-	    push!(stimes,stime)
-	    
-	    global status=termination_status(model)
-	    if(status!=MOI.LOCALLY_SOLVED && status!=MOI.ALMOST_LOCALLY_SOLVED)
-	        error(status)
-	    end
+with_logger(logger) do
 
-		# Tmk=getTr(mongoClient,10,"MSauth")
-		# if(typeof(Tmk)!=Nothing)
-		# 	global Ik=Ik+((0.71*w)-Tmk)
-		# else
-		# 	println("error")
-		# 	global Ik=0
-		# end
+	w=10
+	#w=parse(Float64,get("users";client=redis_cli))
+	set_value(C,w)
+	global stimes
+	global outfile
 
-		# for m=1:length(NC)
-		# 	set(@sprintf("%s_hw",MS[m]),@sprintf("%.3f",value(NC[m+1])+0.0005*Ik);client=redis_cli)
-		# end
+    #@objective(model,Max,(T[1]))
+    #@objective(model,Max,1.0*T[1]-0.0*(sum(NC)/(maxNC*9)))
+    stime=@elapsed JuMP.optimize!(model)
+    push!(stimes,stime)
+    
+    global status=termination_status(model)
+    if(status!=MOI.LOCALLY_SOLVED && status!=MOI.ALMOST_LOCALLY_SOLVED)
+        error(status)
+    end
 
-	    println(value.(T))
-	    #println(value(sum(X[i] for i in [9 12 15 22 25 32 36 41 44 48  10 14 17 24 29 35 40 43 47])))
-		#println(value.(jump'*T))
+    println(value.(T))
 
-		@info "New Replica" MS value.(NC)
-		publish(@sprintf("%s_srv",name),@sprintf("%s\$%s",join(MS,";"),join(value.(NC),";")); client=redis_cli)
-		
-		# matwrite(@sprintf("./data/%s.mat",outfile), Dict(
-	    #     "stimes" => stimes
-	    # );)
-	end
+	@info "New Replica" MS value.(NC)
+	publish(@sprintf("%s_srv",name),@sprintf("%s\$%s",join(MS,";"),join(value.(NC),";")); client=redis_cli)
+	
+	# matwrite(@sprintf("./data/%s.mat",outfile), Dict(
+    #     "stimes" => stimes
+    # );)
 end
 
 

@@ -1,0 +1,30 @@
+throughput,	entry,	clientEntry,	7.167919266188105
+throughput,	entry,	MSauthEntry,	7.167919293711123
+throughput,	entry,	MSviewprofileEntry,	14.335838659177634
+throughput,	entry,	MSvalidateidEntry,	7.167919294604034
+throughput,	entry,	MSupdateprofileEntry,	7.167919227569676
+throughput,	entry,	MSupdateMilesEntry,	28.671676810156526
+throughput,	entry,	MSbookflightsEntry,	7.167919197086953
+throughput,	entry,	MScancelbookingEntry,	14.335838427082615
+throughput,	entry,	MSqueryflightsEntry,	7.167919240415557
+throughput,	entry,	MSgetrewardmilesEntry,	28.671676832077058
+proc utilization,	act,	clientEntry,	7.167919266188105
+proc utilization,	act,	MSauthEntry,	0.2797280504370805
+proc utilization,	act,	MSviewprofileEntry,	0.48175585814166444
+proc utilization,	act,	MSvalidateidEntry,	0.17729131583273616
+proc utilization,	act,	MSupdateprofileEntry,	0.3519376661544436
+proc utilization,	act,	MSupdateMilesEntry,	0.39718873885109834
+proc utilization,	act,	MSbookflightsEntry,	0.217661034338746
+proc utilization,	act,	MScancelbookingEntry,	0.369076160305246
+proc utilization,	act,	MSqueryflightsEntry,	0.18650209071637255
+proc utilization,	act,	MSgetrewardmilesEntry,	0.3662806715297846
+response time,	entry,	clientEntry,	1.395104998904098
+response time,	entry,	MSauthEntry,	0.06381900000305155
+response time,	entry,	MSviewprofileEntry,	0.033625000000006434
+response time,	entry,	MSvalidateidEntry,	0.024753999999987238
+response time,	entry,	MSupdateprofileEntry,	0.049119000000039006
+response time,	entry,	MSupdateMilesEntry,	0.013868000000001253
+response time,	entry,	MSbookflightsEntry,	0.038686100901736936
+response time,	entry,	MScancelbookingEntry,	0.07501094949628921
+response time,	entry,	MSqueryflightsEntry,	0.02603899999999096
+response time,	entry,	MSgetrewardmilesEntry,	0.012789999999999434
