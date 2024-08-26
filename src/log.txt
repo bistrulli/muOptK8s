@@ -1,81 +1,201 @@
-2024-08-23 20:41:45 INFO     Data Loaded
-2024-08-23 20:41:45 INFO     Evaluating case with Clients=426
-2024-08-23 20:41:45 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:41:45 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:41:47 INFO     305.35336051595675--305.48542438780777
-2024-08-23 20:41:47 INFO     Evaluating case with Clients=314
-2024-08-23 20:41:47 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:41:47 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:41:49 INFO     225.07266478521453--225.16912997278408
-2024-08-23 20:41:49 INFO     Evaluating case with Clients=490
-2024-08-23 20:41:49 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:41:49 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:41:50 INFO     351.22804377274207--351.38051014873196
-2024-08-23 20:41:50 INFO     Evaluating case with Clients=437
-2024-08-23 20:41:50 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:41:50 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:41:52 INFO     313.2380716971145--313.3736396316808
-2024-08-23 20:41:52 INFO     Evaluating case with Clients=338
-2024-08-23 20:41:52 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:41:52 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:41:54 INFO     242.27567101359185--242.37975073554867
-2024-08-23 20:41:54 INFO     Evaluating case with Clients=466
-2024-08-23 20:41:54 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:41:54 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:41:55 INFO     334.0250375513634--334.1698486432426
-2024-08-23 20:41:55 INFO     Evaluating case with Clients=350
-2024-08-23 20:41:55 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:41:55 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:41:57 INFO     250.87717412810431--250.98506429904222
-2024-08-23 20:41:57 INFO     Evaluating case with Clients=377
-2024-08-23 20:41:57 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:41:57 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:41:58 INFO     270.23055613381257--270.3470265897787
-2024-08-23 20:41:58 INFO     Evaluating case with Clients=450
-2024-08-23 20:41:58 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:41:58 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:42:00 INFO     322.55636672783686--322.6960772529004
-2024-08-23 20:42:00 INFO     Evaluating case with Clients=379
-2024-08-23 20:42:00 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:42:00 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:42:02 INFO     271.6641399856302--271.7812463773824
-2024-08-23 20:42:02 INFO     Evaluating case with Clients=233
-2024-08-23 20:42:02 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:42:02 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:42:03 INFO     167.01251877025328--167.0833592941576
-2024-08-23 20:42:03 INFO     Evaluating case with Clients=365
-2024-08-23 20:42:03 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:42:03 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:42:05 INFO     261.62905301709446--261.741708880728
-2024-08-23 20:42:05 INFO     Evaluating case with Clients=346
-2024-08-23 20:42:05 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:42:05 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:42:07 INFO     248.01000642003936--248.1166261730412
-2024-08-23 20:42:07 INFO     Evaluating case with Clients=393
-2024-08-23 20:42:07 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:42:07 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:42:09 INFO     281.6992269484744--281.82078615406937
-2024-08-23 20:42:09 INFO     Evaluating case with Clients=490
-2024-08-23 20:42:09 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:42:09 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:42:11 INFO     351.22804377274207--351.38051014873196
-2024-08-23 20:42:11 INFO     Evaluating case with Clients=328
-2024-08-23 20:42:11 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:42:11 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:42:12 INFO     235.1077517540754--235.2086577589547
-2024-08-23 20:42:12 INFO     Evaluating case with Clients=294
-2024-08-23 20:42:12 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:42:12 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:42:14 INFO     210.73682626678044--210.82695288421382
-2024-08-23 20:42:14 INFO     Evaluating case with Clients=442
-2024-08-23 20:42:14 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:42:14 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:42:15 INFO     316.8220313239684--316.959192327615
-2024-08-23 20:42:15 INFO     Evaluating case with Clients=276
-2024-08-23 20:42:15 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:42:15 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:42:17 INFO     197.83457159636365--197.91899944360733
-2024-08-23 20:42:17 INFO     Evaluating case with Clients=326
-2024-08-23 20:42:17 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
-2024-08-23 20:42:17 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
-2024-08-23 20:42:18 INFO     233.6741679031237--233.77443932128458
+2024-08-26 15:24:18 INFO     Data Loaded
+2024-08-26 15:24:18 INFO     Evaluating case with Clients=26
+2024-08-26 15:24:18 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:18 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:20 INFO     18.636590074230966--18.645089769157572
+2024-08-26 15:24:20 INFO     Evaluating case with Clients=64
+2024-08-26 15:24:20 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:20 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:22 INFO     45.87468324494824--45.895605396961216
+2024-08-26 15:24:22 INFO     Evaluating case with Clients=19
+2024-08-26 15:24:22 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:22 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:23 INFO     13.619046585773654--13.625257942983216
+2024-08-26 15:24:23 INFO     Evaluating case with Clients=11
+2024-08-26 15:24:23 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:23 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:25 INFO     7.884711189135567--7.888307284498238
+2024-08-26 15:24:25 INFO     Evaluating case with Clients=24
+2024-08-26 15:24:25 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:25 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:27 INFO     17.203006226530636--17.210852104536325
+2024-08-26 15:24:27 INFO     Evaluating case with Clients=22
+2024-08-26 15:24:27 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:27 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:29 INFO     15.76942237821842--15.776614439915082
+2024-08-26 15:24:29 INFO     Evaluating case with Clients=56
+2024-08-26 15:24:29 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:29 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:31 INFO     40.14034786043144--40.158654738476244
+2024-08-26 15:24:31 INFO     Evaluating case with Clients=59
+2024-08-26 15:24:31 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:31 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:33 INFO     42.290723643213965--42.310011235408105
+2024-08-26 15:24:33 INFO     Evaluating case with Clients=42
+2024-08-26 15:24:33 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:33 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:35 INFO     30.10526089073352--30.11899108612753
+2024-08-26 15:24:35 INFO     Evaluating case with Clients=52
+2024-08-26 15:24:35 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:35 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:37 INFO     37.273180145623314--37.29017940923375
+2024-08-26 15:24:37 INFO     Evaluating case with Clients=54
+2024-08-26 15:24:37 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:37 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:39 INFO     38.70676398659339--38.724417073854994
+2024-08-26 15:24:39 INFO     Evaluating case with Clients=65
+2024-08-26 15:24:39 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:39 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:41 INFO     46.59147517201384--46.61272422927184
+2024-08-26 15:24:41 INFO     Evaluating case with Clients=48
+2024-08-26 15:24:41 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:41 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:42 INFO     34.40601243370971--34.421704079991265
+2024-08-26 15:24:42 INFO     Evaluating case with Clients=50
+2024-08-26 15:24:42 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:42 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:44 INFO     35.83959628884575--35.85594174461251
+2024-08-26 15:24:44 INFO     Evaluating case with Clients=34
+2024-08-26 15:24:44 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:44 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:46 INFO     24.370925478270483--24.38204042764255
+2024-08-26 15:24:46 INFO     Evaluating case with Clients=20
+2024-08-26 15:24:46 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:46 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:48 INFO     14.33583852476081--14.342376775293838
+2024-08-26 15:24:48 INFO     Evaluating case with Clients=20
+2024-08-26 15:24:48 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:48 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:50 INFO     14.33583852476081--14.342376775293838
+2024-08-26 15:24:50 INFO     Evaluating case with Clients=47
+2024-08-26 15:24:50 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:50 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:52 INFO     33.689220507334426--33.70458524768064
+2024-08-26 15:24:52 INFO     Evaluating case with Clients=50
+2024-08-26 15:24:52 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:52 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:53 INFO     35.83959628884575--35.85594174461251
+2024-08-26 15:24:53 INFO     Evaluating case with Clients=68
+2024-08-26 15:24:53 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:53 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:55 INFO     48.74185095654125--48.76408072620371
+2024-08-26 15:24:55 INFO     Evaluating case with Clients=34
+2024-08-26 15:24:55 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:55 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:57 INFO     24.370925478270483--24.38204042764255
+2024-08-26 15:24:57 INFO     Evaluating case with Clients=53
+2024-08-26 15:24:57 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:57 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:24:59 INFO     37.98997206907034--38.007298241544376
+2024-08-26 15:24:59 INFO     Evaluating case with Clients=30
+2024-08-26 15:24:59 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:24:59 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:01 INFO     21.503757771085628--21.51356509840006
+2024-08-26 15:25:01 INFO     Evaluating case with Clients=14
+2024-08-26 15:25:01 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:01 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:03 INFO     10.035086961623112--10.039663781430104
+2024-08-26 15:25:03 INFO     Evaluating case with Clients=21
+2024-08-26 15:25:03 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:03 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:05 INFO     15.05263045373395--15.05949560760446
+2024-08-26 15:25:05 INFO     Evaluating case with Clients=49
+2024-08-26 15:25:05 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:05 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:07 INFO     35.12280436087871--35.13882291230188
+2024-08-26 15:25:07 INFO     Evaluating case with Clients=63
+2024-08-26 15:25:07 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:07 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:09 INFO     45.157891318478136--45.1784865646506
+2024-08-26 15:25:09 INFO     Evaluating case with Clients=27
+2024-08-26 15:25:09 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:09 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:11 INFO     19.35338199863995--19.362208601468193
+2024-08-26 15:25:11 INFO     Evaluating case with Clients=37
+2024-08-26 15:25:11 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:11 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:13 INFO     26.52130124595532--26.53339692457442
+2024-08-26 15:25:13 INFO     Evaluating case with Clients=54
+2024-08-26 15:25:13 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:13 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:14 INFO     38.70676398659339--38.724417073854994
+2024-08-26 15:25:14 INFO     Evaluating case with Clients=23
+2024-08-26 15:25:14 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:14 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:16 INFO     16.486214302517986--16.493733272225704
+2024-08-26 15:25:16 INFO     Evaluating case with Clients=69
+2024-08-26 15:25:16 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:16 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:18 INFO     49.45864288496531--49.481199558514334
+2024-08-26 15:25:18 INFO     Evaluating case with Clients=55
+2024-08-26 15:25:18 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:18 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:20 INFO     39.42355593370159--39.44153590616562
+2024-08-26 15:25:20 INFO     Evaluating case with Clients=36
+2024-08-26 15:25:20 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:20 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:22 INFO     25.80450932439394--25.816278092263794
+2024-08-26 15:25:22 INFO     Evaluating case with Clients=16
+2024-08-26 15:25:22 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:22 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:24 INFO     11.46867081123629--11.473901446051348
+2024-08-26 15:25:24 INFO     Evaluating case with Clients=66
+2024-08-26 15:25:24 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:24 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:26 INFO     47.30826709968934--47.329843061582466
+2024-08-26 15:25:26 INFO     Evaluating case with Clients=16
+2024-08-26 15:25:26 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:26 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:28 INFO     11.46867081123629--11.473901446051348
+2024-08-26 15:25:28 INFO     Evaluating case with Clients=10
+2024-08-26 15:25:28 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:28 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:30 INFO     7.167919264437402--7.171188452187615
+2024-08-26 15:25:30 INFO     Evaluating case with Clients=33
+2024-08-26 15:25:30 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:30 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:32 INFO     23.6541335498452--23.664921595331926
+2024-08-26 15:25:32 INFO     Evaluating case with Clients=49
+2024-08-26 15:25:32 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:32 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:34 INFO     35.12280436087871--35.13882291230188
+2024-08-26 15:25:34 INFO     Evaluating case with Clients=70
+2024-08-26 15:25:34 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:34 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:35 INFO     50.17543481140354--50.19831839082495
+2024-08-26 15:25:35 INFO     Evaluating case with Clients=60
+2024-08-26 15:25:35 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:35 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:37 INFO     43.00751557005087--43.02713006771873
+2024-08-26 15:25:37 INFO     Evaluating case with Clients=68
+2024-08-26 15:25:37 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:37 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:39 INFO     48.74185095654125--48.76408072620371
+2024-08-26 15:25:39 INFO     Evaluating case with Clients=20
+2024-08-26 15:25:39 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:39 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:41 INFO     14.33583852476081--14.342376775293838
+2024-08-26 15:25:41 INFO     Evaluating case with Clients=44
+2024-08-26 15:25:41 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:41 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:43 INFO     31.53884473207997--31.553228750748772
+2024-08-26 15:25:43 INFO     Evaluating case with Clients=67
+2024-08-26 15:25:43 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:43 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:45 INFO     48.02505902794368--48.046961893893084
+2024-08-26 15:25:45 INFO     Evaluating case with Clients=21
+2024-08-26 15:25:45 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:45 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:47 INFO     15.05263045373395--15.05949560760446
+2024-08-26 15:25:47 INFO     Evaluating case with Clients=62
+2024-08-26 15:25:47 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:47 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:49 INFO     44.44109941258018--44.46136773233997
+2024-08-26 15:25:49 INFO     Evaluating case with Clients=24
+2024-08-26 15:25:49 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:49 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:51 INFO     17.203006226530636--17.210852104536325
+2024-08-26 15:25:51 INFO     Evaluating case with Clients=12
+2024-08-26 15:25:51 INFO     Updating model in path /Users/emilio-imt/git/muOptK8s/models/acmeair_tpl.lqn
+2024-08-26 15:25:51 INFO     Solving model /Users/emilio-imt/git/muOptK8s/models/model.lqn
+2024-08-26 15:25:53 INFO     8.601503113265027--8.605426116808859

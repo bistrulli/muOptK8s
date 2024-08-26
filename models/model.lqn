@@ -8,30 +8,30 @@ G
 
 # Processors declaration, with multiplicity 
 P 0
-p ProcClient f m 326
-p ProcMSauth f m 10
-p ProcMSvalidateid f m 7
-p ProcMSviewprofile f m 16
-p ProcMSupdateprofile f m 12
-p ProcMSupdateMiles f m 14
-p ProcMSbookflights f m 8
-p ProcMScancelbooking f m 13
-p ProcMSqueryflights f m 7
-p ProcMSgetrewardmiles f m 13
+p ProcClient f m 12
+p ProcMSauth f m 1
+p ProcMSvalidateid f m 1
+p ProcMSviewprofile f m 1
+p ProcMSupdateprofile f m 1
+p ProcMSupdateMiles f m 1
+p ProcMSbookflights f m 1
+p ProcMScancelbooking f m 1
+p ProcMSqueryflights f m 1
+p ProcMSgetrewardmiles f m 1
 -1
 
 # Tasks declaration
 T 0
-t client r clientEntry -1 ProcClient m 326
-t MSauth n MSauthEntry -1 ProcMSauth m 326
-t MSvalidateid n MSvalidateidEntry -1 ProcMSvalidateid m 326
-t MSviewprofile n MSviewprofileEntry -1 ProcMSviewprofile m 326
-t MSupdateprofile n MSupdateprofileEntry -1 ProcMSupdateprofile m 326
-t MSupdateMiles n MSupdateMilesEntry -1 ProcMSupdateMiles m 326
-t MSbookflights n MSbookflightsEntry -1 ProcMSbookflights m 326
-t MScancelbooking n MScancelbookingEntry -1 ProcMScancelbooking m 326
-t MSqueryflights n MSqueryflightsEntry -1 ProcMSqueryflights m 326
-t MSgetrewardmiles n MSgetrewardmilesEntry -1 ProcMSgetrewardmiles m 326
+t client r clientEntry -1 ProcClient m 12
+t MSauth n MSauthEntry -1 ProcMSauth m 12
+t MSvalidateid n MSvalidateidEntry -1 ProcMSvalidateid m 12
+t MSviewprofile n MSviewprofileEntry -1 ProcMSviewprofile m 12
+t MSupdateprofile n MSupdateprofileEntry -1 ProcMSupdateprofile m 12
+t MSupdateMiles n MSupdateMilesEntry -1 ProcMSupdateMiles m 12
+t MSbookflights n MSbookflightsEntry -1 ProcMSbookflights m 12
+t MScancelbooking n MScancelbookingEntry -1 ProcMScancelbooking m 12
+t MSqueryflights n MSqueryflightsEntry -1 ProcMSqueryflights m 12
+t MSgetrewardmiles n MSgetrewardmilesEntry -1 ProcMSgetrewardmiles m 12
 -1
 
 # Entries declaration
@@ -64,6 +64,7 @@ y clientEntry MSauthEntry 1.0 -1
 #! solver ode        	# ODE analysis - solver sim will run simulation
 #! confidence_level 0.95
 #! confidence_percent_error 0.01
+#! stoptime 1000.0
 
 # 2. Output settings
 #! throughput: clientEntry MSauthEntry MSviewprofileEntry  MSvalidateidEntry MSupdateprofileEntry MSupdateMilesEntry MSbookflightsEntry MScancelbookingEntry MSqueryflightsEntry MSgetrewardmilesEntry

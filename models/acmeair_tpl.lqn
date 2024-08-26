@@ -64,6 +64,7 @@ y clientEntry MSauthEntry 1.0 -1
 #! solver ode        	# ODE analysis - solver sim will run simulation
 #! confidence_level 0.95
 #! confidence_percent_error 0.01
+#! stoptime 1000.0
 
 # 2. Output settings
 #! throughput: clientEntry MSauthEntry MSviewprofileEntry  MSvalidateidEntry MSupdateprofileEntry MSupdateMilesEntry MSbookflightsEntry MScancelbookingEntry MSqueryflightsEntry MSgetrewardmilesEntry

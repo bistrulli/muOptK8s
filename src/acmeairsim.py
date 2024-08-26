@@ -34,7 +34,7 @@ def solveModel(diffLQNPath=f"{home_dir}/DiffLQN_0.1/DiffLQN.jar",modelPath=None)
 	modelPath=Path(modelPath)
 	diffLQNPath=Path(diffLQNPath)
 	subprocess.run(["java","-jar",f"{str(diffLQNPath)}",f"{str(modelPath)}"],
-					stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,check=True)
+					stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT,check=True,timeout=120)
 
 def updateModel(modelPath=None,params={}):
 	logger.info(f"Updating model in path {modelPath}")
@@ -68,6 +68,7 @@ def main():
 	logger.info("Data Loaded")
 	clients=data["Clients"]
 	tpred=[]
+	tpred2=[]
 	for idx,c in enumerate(clients):
 		params={}
 		logger.info(f"Evaluating case with Clients={int(c)}")
@@ -78,13 +79,23 @@ def main():
 		updateModel(modelPath=Path(__file__).parent.parent/Path("models/acmeair_tpl.lqn"),params=params)
 		solveModel(modelPath=Path(__file__).parent.parent/Path("models/model.lqn"))
 		res=getResults(resPath=Path(__file__).parent.parent/Path("models/model.csv"))
+		params2=params.copy()
+		for ms in MS:
+			msidx=MS.index(ms)
+			params2[f"$Proc{ms}"]=int(np.ceil(params2[f"$Proc{ms}"]-1))
+		
+		#updateModel(modelPath=Path(__file__).parent.parent/Path("models/acmeair_tpl.lqn"),params=params2)
+		#solveModel(modelPath=Path(__file__).parent.parent/Path("models/model.lqn"))
+		#res2=getResults(resPath=Path(__file__).parent.parent/Path("models/model.csv"))
 		tpred+=[res[(res["metric"]=="throughput")&(res["name"]=="\tclientEntry")]["value"].iloc[0]]
+		#tpred2+=[res2[(res2["metric"]=="throughput")&(res2["name"]=="\tclientEntry")]["value"].iloc[0]]
 		tm=data["Topt"][idx]
 		logger.info(f"{tpred[-1]}--{tm}")
 
 	plt.figure()
-	plt.plot(tpred,label="pred")
-	plt.plot(data["Topt"],label="mes")
+	plt.step(np.linspace(0,len(tpred),len(tpred)),tpred,'-',label="pred")
+	#plt.step(np.linspace(0,len(tpred),len(tpred)),tpred2,'--',label="pred2")
+	plt.step(np.linspace(0,len(tpred),len(tpred)),data["Topt"],'--',label="mes")
 	plt.legend()
 	plt.grid()
 	plt.show()
