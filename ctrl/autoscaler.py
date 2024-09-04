@@ -251,10 +251,10 @@ class Autoscaler(object):
         """
         try:
             users = self.rCon.get(f"{self.name}_wrk")
-            if(users is None or users <=0):
+            if(users is None or int(users) <=0):
                 self.logger.warning(f"{self.name}_wrk not set, falling back to default number of users 1")
                 users=1
-            return users
+            return int(users)
         except Exception as e:
             self.logger.error("get_users failed with full error trace:")
             self.logger.error(e, exc_info=True)
