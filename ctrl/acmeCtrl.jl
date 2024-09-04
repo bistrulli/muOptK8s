@@ -313,7 +313,7 @@ subscribe(channels...; stop_fn=stop_fn, client=subscriber) do msg
 		global outfile
 
         Psi=0.9
-        @objective(model,Max,Psi*(T[1])/(0.75*w)-(1-Psi)*sum(E_u))
+        @objective(model,Max,Psi*(T[1])/(0.76*w)-(1-Psi)*sum(E_u))
 	    stime=@elapsed JuMP.optimize!(model)
 	    push!(stimes,stime)
 	    
