@@ -12,6 +12,19 @@ import numpy as np
 #import Webapp
 
 
+acmeair_replacement_dict = {
+    "MSauth" : "acmeair-auth",
+    "MSvalidateid" : "acmeair-customer-validateid",
+    "MSbookflights" : "acmeair-booking-bookflights",
+    "MSupdateMiles" : "acmeair-customer-updatemiles",
+    "MScancelbooking" : "acmeair-booking-cancelbooking",
+    "MSgetrewardmiles" : "acmeair-flight-getrewardmiles", 
+    "MSqueryflights" : "acmeair-flight-queryflights",
+    "MSviewprofile" : "acmeair-customer-byidget",
+    "MSupdateprofile" : "acmeair-customer-byidpost"
+}
+
+
 acmeair_keywords = ["acmeair-main", "acmeair-auth",
                        "acmeair-customer-byidget", "acmeair-customer-byidpost", "acmeair-customer-updatemiles", "acmeair-customer-validateid",
                        "acmeair-booking-bookflights", "acmeair-booking-bybookingnumber", "acmeair-booking-byuser", "acmeair-booking-cancelbooking",
@@ -290,11 +303,12 @@ class Autoscaler(object):
                     self.logger.info(m['data'])
                     res_ctrl = m['data'].split("$")
                     ms_list = res_ctrl[0].split(";")
+                    ms_list2 = [acmeair_replacement_dict[ms] for ms in ms_list]
                     replicas = res_ctrl[1].split(";")
                     #replicas = m['data'].split("_")
                     if self.last_r is None:
                         self.last_r = {}
-                    for idx, ms in enumerate(ms_list):
+                    for idx, ms in enumerate(ms_list2):
                         deployment_name = f"{ms}-deployment"
                         new_replicas = np.ceil(float(replicas[idx]))
                         self.logger.info(f"Updating deployment {deployment_name} to {new_replicas} replicas")
