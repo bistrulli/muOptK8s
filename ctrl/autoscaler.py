@@ -250,7 +250,10 @@ class Autoscaler(object):
         :return:    The current number of users.
         """
         try:
-            users = int(self.rCon.get(f"{self.name}_wrk"))
+            users = self.rCon.get(f"{self.name}_wrk")
+            if(users is None or users <=0):
+                self.logger.warning(f"{self.name}_wrk not set, falling back to default number of users 1")
+                users=1
             return users
         except Exception as e:
             self.logger.error("get_users failed with full error trace:")
