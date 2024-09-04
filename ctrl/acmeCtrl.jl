@@ -261,13 +261,13 @@ Umax=1.0;
 
 U=[T[5]/(NC[2]*MU[6]),#Uauth
 T[4]/(NC[3]*MU[5]),#Uvalidate
-T[7]/(NC[9]*MU[9]),#Uview
-T[9]/(NC[10]*MU[12]),#Uupdate
-T[11]/(NC[8]*MU[15]),#Uquery
-(T[14]+T[19])/(NC[5]*MU[20]),#UupdateMiles,
-(T[16]+T[20])/(NC[7]*MU[23]),#UgetRewards,
 T[17]/(NC[4]*MU[24]),#Ubook
+(T[14]+T[19])/(NC[5]*MU[20]),#UupdateMiles,
 (T[21]+T[22])/(NC[6]*MU[29]),#Ucancel
+(T[16]+T[20])/(NC[7]*MU[23]),#UgetRewards,
+T[11]/(NC[8]*MU[15]),#Uquery
+T[7]/(NC[9]*MU[9]),#Uview
+T[9]/(NC[10]*MU[12])#Uupdate
 ]
 
 @variable(model,E_u[i=1:9]>=0)
@@ -330,15 +330,8 @@ subscribe(channels...; stop_fn=stop_fn, client=subscriber) do msg
 		# 	global Ik=0
 		# end
 
-		# for m=1:length(NC)
-		# 	set(@sprintf("%s_hw",MS[m]),@sprintf("%.3f",value(NC[m+1])+0.0005*Ik);client=redis_cli)
-		# end
-
-	    #println(value.(U))
-	    #println(value(sum(X[i] for i in [9 12 15 22 25 32 36 41 44 48  10 14 17 24 29 35 40 43 47])))
-		#println(value.(jump'*T))
-
 		@info "New Replica" MS value.(NC)
+		@info "Utiliation" MS value.(U)
 		publish(@sprintf("%s_srv",name),@sprintf("%s\$%s",join(MS,";"),join(value.(NC),";")); client=redis_cli)
 		
 		# matwrite(@sprintf("./data/%s.mat",outfile), Dict(
@@ -346,39 +339,3 @@ subscribe(channels...; stop_fn=stop_fn, client=subscriber) do msg
 	    # );)
 	end
 end
-
-
-#--------------
-# npoint=40
-# NCopt=zeros(9,npoint)
-# NTopt=zeros(9,npoint)
-# stimeOpt=zeros(1,npoint)
-# clients=rand(1,npoint)'*500
-# #clients=LinRange(1,100, npoint);
-# #clients=[1]
-#
-# for i=1:size(clients,1)
-#     global w=round(clients[i])
-#     set_value(C,w)
-#
-#     @objective(model,Max,0.5*(T[1])*15/(w)-0.5*(sum(NC)+sum(NT))/(maxNC*10+maxNT*10))
-#     global stimes=@elapsed JuMP.optimize!(model)
-#     global status=termination_status(model)
-#     if(status!=MOI.LOCALLY_SOLVED && status!=MOI.ALMOST_LOCALLY_SOLVED)
-#         error(status)
-#     end
-#
-#     #RTv=[value(X[1]+X[5])/value(T[1]),value(X[3])/value(T[4]),value(X[4])/value(T[5])];
-#     #Tv=[value(T[1]),value(T[4]),value(T[5])]
-#
-#     NCopt[:,i]=value.(NC)
-#     NTopt[:,i]=value.(NT)
-#     stimeOpt[i]=stimes
-# end
-#
-# matwrite("re.mat", Dict(
-# 	"NC_opt" => NCopt,
-# 	"NT_opt" => NTopt,
-# 	"Clients" =>  collect(clients),
-# 	"rtime_opt" => stimeOpt
-# );)
