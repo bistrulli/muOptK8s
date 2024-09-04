@@ -105,15 +105,14 @@ MU[30]=1.0/1; #XBrowse_e;
 @variable(model,X[i=1:size(jump,2)]>=0)
 @variable(model,C == 0, Param())
 @variable(model,NC[2:10]>=0)
-@variable(model,NT[2:10]>=0)
-Umax=1.0;
+#@variable(model,NT[2:10]>=0)
 
 #devo sottrarre gli stati che contano il numero di richieste sincrone, altrimneti non si conservano il numero di job
 @constraint(model,sum(X[i] for i in [2,4,5,6,8,9,11,12,14,15,17,19,20,22,23,24,26,29,30])==C)
 
 @constraint(model,jump'*T.==0)
 @constraint(model,NC.<=maxNC)
-@constraint(model,NT.<=maxNT)
+#@constraint(model,NT.<=maxNT)
 #@constraint(model,NC.==[1,1,1,1,1,1,1,1,1])
 
 #--------rate
@@ -203,7 +202,7 @@ Umax=1.0;
 #p.delta*min(p.NT(6)-(X(27)+X(28)+X(29)),X(26));
 #Tm18=@NLexpression(model,delta*-(-(NT[6]-(X[27]+X[28]+X[29]))-X[26]+sqrt((-(NT[6]-(X[27]+X[28]+X[29]))+X[26])^2+alpha))/2)
 @variable(model,Tm18>=0)
-@constraint(model,Tm18<=NT[6]-(X[27]+X[28]+X[29]))
+#@constraint(model,Tm18<=NT[6]-(X[27]+X[28]+X[29]))
 @constraint(model,Tm18<=X[26])
 
 #min(X(29),p.NC(6));
@@ -313,7 +312,7 @@ subscribe(channels...; stop_fn=stop_fn, client=subscriber) do msg
 		global outfile
 
         Psi=0.9
-        @objective(model,Max,Psi*(T[1])/(0.76*w)-(1-Psi)*sum(E_u))
+        @objective(model,Max,Psi*(T[1])/(0.75*w)-(1-Psi)*sum(E_u))
 	    stime=@elapsed JuMP.optimize!(model)
 	    push!(stimes,stime)
 	    
