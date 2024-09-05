@@ -1,4 +1,4 @@
-using Jedis,Printf,Ipopt,JuMP,MAT,ParameterJuMP,Mongoc,UUIDs,ArgParse,Logging,LogRoller
+using Jedis,Printf,Ipopt,JuMP,MAT,ParameterJuMP,Mongoc,UUIDs,ArgParse,Logging,LogRoller,HSL_jll
 #include("getTR.jl")
 
 # Define CLI Arg
@@ -35,11 +35,12 @@ mongoClient = Mongoc.Client(redisHost, 27017)
 
 #model = Model(()->MadNLP.Optimizer(print_level=MadNLP.INFO))
 model = Model(Ipopt.Optimizer)
-#set_optimizer_attribute(model, "linear_solver", "pardiso")
+set_attribute(model, "hsllib", "/Users/emilio-imt/Downloads/lbt_HSL_jll.jl-2023.11.7/HSL_jll.jl-2023.11.7/override/lib/aarch64-apple-darwin-libgfortran5/libhsl.dylib")
+set_optimizer_attribute(model, "linear_solver", "ma57")
 set_optimizer_attribute(model, "max_iter", 100000)
 #set_optimizer_attribute(model, "tol", 10^-10)
 #set_optimizer_attribute(model, "hessian_approximation", "limited-memory")
-#set_optimizer_attribute(model, "print_level", 0)
+set_optimizer_attribute(model, "print_level", 0)
 
 jump=[  +1  +1  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  -1;
         +0  -1  +1  +1  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0;
@@ -65,8 +66,8 @@ jump=[  +1  +1  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  
         +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +0  +1  +0  +0  -1  +0;
     ];
 
-delta=10^4
-alpha=10^-3
+delta=10^6
+alpha=10^-30
 maxNC=100
 maxNT=1000
 
@@ -130,16 +131,16 @@ MU[30]=1.0/1; #XBrowse_e;
 #@constraint(model,Tm3<=NT[3]-X[5])
 #min(X(5),p.NC(3));
 
-#Tm4=@NLexpression(model,-(-NC[3]-X[5]+sqrt((-NC[3]+X[5])^2+alpha))/2)
-@variable(model,Tm4>=0)
-@constraint(model,Tm4<=X[5])
-@constraint(model,Tm4<=NC[3])
+Tm4=@NLexpression(model,-(-NC[3]-X[5]+sqrt((-NC[3]+X[5])^2+alpha))/2)
+#@variable(model,Tm4>=0)
+#@constraint(model,Tm4<=X[5])
+#@constraint(model,Tm4<=NC[3])
 
 #min(X(6),p.NC(2));
-#Tm5=@NLexpression(model,-(-NC[2]-X[6]+sqrt((-NC[2]+X[6])^2+alpha))/2)
-@variable(model,Tm5>=0)
-@constraint(model,Tm5<=X[6])
-@constraint(model,Tm5<=NC[2])
+Tm5=@NLexpression(model,-(-NC[2]-X[6]+sqrt((-NC[2]+X[6])^2+alpha))/2)
+#@variable(model,Tm5>=0)
+#@constraint(model,Tm5<=X[6])
+#@constraint(model,Tm5<=NC[2])
 
 #p.delta*min(p.NT(9)-(X(9)),X(8));
 #Tm6=@NLexpression(model,delta*-(-(NT[9]-X[9])-X[8]+sqrt((-(NT[9]-X[9])+X[8])^2+alpha))/2)
@@ -148,10 +149,10 @@ MU[30]=1.0/1; #XBrowse_e;
 @constraint(model,Tm6<=X[8])
 
 #min(X(9),p.NC(9));
-#Tm7=@NLexpression(model,-(-NC[9]-X[9]+sqrt((-NC[9]+X[9])^2+alpha))/2)
-@variable(model,Tm7>=0)
-@constraint(model,Tm7<=NC[9])
-@constraint(model,Tm7<=X[9])
+Tm7=@NLexpression(model,-(-NC[9]-X[9]+sqrt((-NC[9]+X[9])^2+alpha))/2)
+#@variable(model,Tm7>=0)
+#@constraint(model,Tm7<=NC[9])
+#@constraint(model,Tm7<=X[9])
 
 #p.delta*min(p.NT(10)-(X(12)),X(11));
 #Tm8=@NLexpression(model,delta*-(-(NT[10]-X[12])-X[11]+sqrt((-(NT[10]-X[12])+X[11])^2+alpha))/2)
@@ -160,10 +161,10 @@ MU[30]=1.0/1; #XBrowse_e;
 @constraint(model,Tm8<=X[11])
 
 #min(p.NC(10),X(12));
-#Tm9=@NLexpression(model,-(-NC[10]-X[12]+sqrt((-NC[10]+X[12])^2+alpha))/2)
-@variable(model,Tm9>=0)
-@constraint(model,Tm9<=NC[10])
-@constraint(model,Tm9<=X[12])
+Tm9=@NLexpression(model,-(-NC[10]-X[12]+sqrt((-NC[10]+X[12])^2+alpha))/2)
+#@variable(model,Tm9>=0)
+#@constraint(model,Tm9<=NC[10])
+#@constraint(model,Tm9<=X[12])
 
 #p.delta*min(p.NT(8)-(X(15)),X(14));
 #Tm10=@NLexpression(model,delta*-(-(NT[8]-X[15])-X[14]+sqrt((-(NT[8]-X[15])+X[14])^2+alpha))/2)
@@ -172,10 +173,10 @@ MU[30]=1.0/1; #XBrowse_e;
 @constraint(model,Tm10<=X[14])
 
 #min(p.NC(8),X(15));
-#Tm11=@NLexpression(model,-(-NC[8]-X[15]+sqrt((-NC[8]+X[15])^2+alpha))/2)
-@variable(model,Tm11>=0)
-@constraint(model,Tm11<=NC[8])
-@constraint(model,Tm11<=X[15])
+Tm11=@NLexpression(model,-(-NC[8]-X[15]+sqrt((-NC[8]+X[15])^2+alpha))/2)
+#@variable(model,Tm11>=0)
+#@constraint(model,Tm11<=NC[8])
+#@constraint(model,Tm11<=X[15])
 
 #p.delta*min(p.NT(4)-(X(18)+X(21)+X(24)),X(17));
 #Tm12=@NLexpression(model,delta*-(-(NT[4]-(X[18]+X[21]+X[24]))-X[17]+sqrt((-(NT[4]-(X[18]+X[21]+X[24]))+X[17])^2+alpha))/2)
@@ -194,10 +195,10 @@ MU[30]=1.0/1; #XBrowse_e;
 @constraint(model,Tm15<=X[22])
 
 #min(p.NC(4),X(24));
-#Tm17=@NLexpression(model,-(-NC[4]-X[24]+sqrt((-NC[4]+X[24])^2+alpha))/2)
-@variable(model,Tm17>=0)
-@constraint(model,Tm17<=NC[4])
-@constraint(model,Tm17<=X[24])
+Tm17=@NLexpression(model,-(-NC[4]-X[24]+sqrt((-NC[4]+X[24])^2+alpha))/2)
+#@variable(model,Tm17>=0)
+#@constraint(model,Tm17<=NC[4])
+#@constraint(model,Tm17<=X[24])
 
 #p.delta*min(p.NT(6)-(X(27)+X(28)+X(29)),X(26));
 #Tm18=@NLexpression(model,delta*-(-(NT[6]-(X[27]+X[28]+X[29]))-X[26]+sqrt((-(NT[6]-(X[27]+X[28]+X[29]))+X[26])^2+alpha))/2)
@@ -206,22 +207,22 @@ MU[30]=1.0/1; #XBrowse_e;
 @constraint(model,Tm18<=X[26])
 
 #min(X(29),p.NC(6));
-#Tm21=@NLexpression(model,-(-NC[6]-X[29]+sqrt((-NC[6]+X[29])^2+alpha))/2)
-@variable(model,Tm21>=0)
-@constraint(model,Tm21<=NC[6])
-@constraint(model,Tm21<=X[29])
+Tm21=@NLexpression(model,-(-NC[6]-X[29]+sqrt((-NC[6]+X[29])^2+alpha))/2)
+#@variable(model,Tm21>=0)
+#@constraint(model,Tm21<=NC[6])
+#@constraint(model,Tm21<=X[29])
 
 #min(p.NC(5),X(20));
-#TmGPS1=@NLexpression(model,-(-NC[5]-X[20]+sqrt((-NC[5]+X[20])^2+alpha))/2)
-@variable(model,TmGPS1>=0)
-@constraint(model,TmGPS1<=NC[5])
-@constraint(model,TmGPS1<=X[20])
+TmGPS1=@NLexpression(model,-(-NC[5]-X[20]+sqrt((-NC[5]+X[20])^2+alpha))/2)
+#@variable(model,TmGPS1>=0)
+#@constraint(model,TmGPS1<=NC[5])
+#@constraint(model,TmGPS1<=X[20])
 
 #min(p.NC(7),X(23));
-#TmGPS2=@NLexpression(model,-(-NC[7]-X[23]+sqrt((-NC[7]+X[23])^2+alpha))/2)
-@variable(model,TmGPS2>=0)
-@constraint(model,TmGPS2<=NC[7])
-@constraint(model,TmGPS2<=X[23])
+TmGPS2=@NLexpression(model,-(-NC[7]-X[23]+sqrt((-NC[7]+X[23])^2+alpha))/2)
+#@variable(model,TmGPS2>=0)
+#@constraint(model,TmGPS2<=NC[7])
+#@constraint(model,TmGPS2<=X[23])
 
 # MU[5]=9.2569; #XValidate_e;
 # MU[6]=5.5851; #XLogin_e;
@@ -241,22 +242,22 @@ MU[30]=1.0/1; #XBrowse_e;
 @NLconstraint(model,T[4]==Tm4*MU[5]) #TValidate
 @NLconstraint(model,T[5]==Tm5*MU[6]) #TLogin
 @NLconstraint(model,T[6]==delta*Tm6) 
-@NLconstraint(model,T[7]==0.5*Tm7*MU[9])  #TViewProfile
+@NLconstraint(model,T[7]==Tm7*MU[9])  #TViewProfile
 @NLconstraint(model,T[8]==delta*Tm8)
 @NLconstraint(model,T[9]==Tm9*MU[12]) #TUpdateProfile
 @NLconstraint(model,T[10]==delta*Tm10)
 @NLconstraint(model,T[11]==Tm11*MU[15]) #TQuery
 @NLconstraint(model,T[12]==delta*Tm12)
 @NLconstraint(model,T[13]==delta*Tm13)
-@NLconstraint(model,T[14]==0.5*X[18]/(X[18]+X[27])*TmGPS1*MU[20]) #TUpdateMiles
+@NLconstraint(model,T[14]==X[18]/(X[18]+X[27])*TmGPS1*MU[20]) #TUpdateMiles
 @NLconstraint(model,T[15]==delta*Tm15)
-@NLconstraint(model,T[16]==0.5*X[21]/(X[21]+X[28])*TmGPS2*MU[23]) #TGetReward
+@NLconstraint(model,T[16]==X[21]/(X[21]+X[28])*TmGPS2*MU[23]) #TGetReward
 @NLconstraint(model,T[17]==Tm17*MU[24]) #TBook
 @NLconstraint(model,T[18]==delta*Tm18)
 @NLconstraint(model,T[19]==X[27]/(X[18]+X[27])*TmGPS1*MU[20]) #TUpdateMiles
 @NLconstraint(model,T[20]==X[28]/(X[21]+X[28])*TmGPS2*MU[23]) #TGetReward
-@NLconstraint(model,T[21]==0.5*Tm21*MU[29]) #TCancel
-@NLconstraint(model,T[22]==0.5*Tm21*MU[29]) #TCancel
+@NLconstraint(model,T[21]==Tm21*MU[29]) #TCancel
+@NLconstraint(model,T[22]==0*Tm21*MU[29]) #TCancel
 
 U=[T[5]/(NC[2]*MU[6]),#Uauth
 T[4]/(NC[3]*MU[5]),#Uvalidate
@@ -328,6 +329,9 @@ subscribe(channels...; stop_fn=stop_fn, client=subscriber) do msg
 		# 	println("error")
 		# 	global Ik=0
 		# end
+
+        println(value.(NC))
+        println(value.(U))
 
 		@info "New Replica" MS value.(NC)
 		@info "Utiliation" MS value.(U)
