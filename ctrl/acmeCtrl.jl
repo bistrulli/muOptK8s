@@ -88,7 +88,7 @@ MU[29]=1.0/0.025745; #XCancel_e;
 MU[30]=1.0/1; #XBrowse_e;
 
 @variable(model,T[i=1:size(jump,1)]>=0)
-@variable(model,X[i=1:size(jump,2)]>=0,start = 10^-3)
+@variable(model,X[i=1:size(jump,2)]>=0,start = 10^-6)
 @variable(model,C == 0, Param())
 @variable(model,NC[2:10]>=0)
 #@variable(model,NT[2:10]>=0)
@@ -104,25 +104,46 @@ MU[30]=1.0/1; #XBrowse_e;
 #-(-a-b+sqrt((-a+b)^2+10^-2))/2;
 
 #min(X(5),p.NC(3));
-Tm4=@NLexpression(model,-(-NC[3]-X[5]+sqrt((-NC[3]+X[5])^2+alpha))/2)
+#Tm4=@NLexpression(model,-(-NC[3]-X[5]+sqrt((-NC[3]+X[5])^2+alpha))/2)
+@variable(model,Tm4>=0)
+@constraint(model,Tm4<=NC[3])
+@constraint(model,Tm4<=X[5])
 
 #min(X(6),p.NC(2));
-Tm5=@NLexpression(model,-(-NC[2]-X[6]+sqrt((-NC[2]+X[6])^2+alpha))/2)
+#Tm5=@NLexpression(model,-(-NC[2]-X[6]+sqrt((-NC[2]+X[6])^2+alpha))/2)
+@variable(model,Tm5>=0)
+@constraint(model,Tm5<=NC[2])
+@constraint(model,Tm5<=X[6])
 
 #min(X(9),p.NC(9));
-Tm7=@NLexpression(model,-(-NC[9]-X[9]+sqrt((-NC[9]+X[9])^2+alpha))/2)
+#Tm7=@NLexpression(model,-(-NC[9]-X[9]+sqrt((-NC[9]+X[9])^2+alpha))/2)
+@variable(model,Tm7>=0)
+@constraint(model,Tm7<=NC[9])
+@constraint(model,Tm7<=X[9])
 
 #min(p.NC(10),X(12));
-Tm9=@NLexpression(model,-(-NC[10]-X[12]+sqrt((-NC[10]+X[12])^2+alpha))/2)
+#Tm9=@NLexpression(model,-(-NC[10]-X[12]+sqrt((-NC[10]+X[12])^2+alpha))/2)
+@variable(model,Tm9>=0)
+@constraint(model,Tm9<=NC[10])
+@constraint(model,Tm9<=X[12])
 
 #min(p.NC(8),X(15));
-Tm11=@NLexpression(model,-(-NC[8]-X[15]+sqrt((-NC[8]+X[15])^2+alpha))/2)
+#Tm11=@NLexpression(model,-(-NC[8]-X[15]+sqrt((-NC[8]+X[15])^2+alpha))/2)
+@variable(model,Tm11>=0)
+@constraint(model,Tm11<=NC[8])
+@constraint(model,Tm11<=X[15])
 
 #min(p.NC(4),X(24));
-Tm17=@NLexpression(model,-(-NC[4]-X[24]+sqrt((-NC[4]+X[24])^2+alpha))/2)
+#Tm17=@NLexpression(model,-(-NC[4]-X[24]+sqrt((-NC[4]+X[24])^2+alpha))/2)
+@variable(model,Tm17>=0)
+@constraint(model,Tm17<=NC[4])
+@constraint(model,Tm17<=X[24])
 
 #min(X(29),p.NC(6));
-Tm21=@NLexpression(model,-(-NC[6]-X[29]+sqrt((-NC[6]+X[29])^2+alpha))/2)
+#Tm21=@NLexpression(model,-(-NC[6]-X[29]+sqrt((-NC[6]+X[29])^2+alpha))/2)
+@variable(model,Tm21>=0)
+@constraint(model,Tm21<=NC[6])
+@constraint(model,Tm21<=X[29])
 
 #min(p.NC(5),X(20));
 TmGPS1=@NLexpression(model,-(-NC[5]-X[20]+sqrt((-NC[5]+X[20])^2+alpha))/2)
@@ -228,10 +249,10 @@ subscribe(channels...; stop_fn=stop_fn, client=subscriber) do msg
 	        error(status)
 	    end
 
-        #for i=1:length(MS)
-        #    println(MS[i]," ",value(Tr[i])," ",value(U[i])," ",value(NC[i+1]))
-        #end
-        #println(value.(NC)')
+        for i=1:length(MS)
+            println(MS[i]," ",value(Tr[i])," ",value(U[i])," ",value(NC[i+1]))
+        end
+        println(value.(NC)')
         #println(value.(U))
 
 		@info "New Replica" MS value.(NC)
