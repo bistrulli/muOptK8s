@@ -36,7 +36,7 @@ mongoClient = Mongoc.Client(redisHost, 27017)
 #model = Model(()->MadNLP.Optimizer(print_level=MadNLP.INFO))
 model = Model(Ipopt.Optimizer)
 set_attribute(model, "hsllib", ENV["HSLjll"])
-set_optimizer_attribute(model, "linear_solver", "ma57")
+set_optimizer_attribute(model, "linear_solver", "ma97")
 set_optimizer_attribute(model, "max_iter", 100000)
 #set_optimizer_attribute(model, "tol", 10^-10)
 #set_optimizer_attribute(model, "hessian_approximation", "limited-memory")
@@ -146,10 +146,16 @@ MU[30]=1.0/1; #XBrowse_e;
 @constraint(model,Tm21<=X[29])
 
 #min(p.NC(5),X(20));
-TmGPS1=@NLexpression(model,-(-NC[5]-X[20]+sqrt((-NC[5]+X[20])^2+alpha))/2)
+#TmGPS1=@NLexpression(model,-(-NC[5]-X[20]+sqrt((-NC[5]+X[20])^2+alpha))/2)
+@variable(model,TmGPS1>=0)
+@constraint(model,TmGPS1<=NC[5])
+@constraint(model,TmGPS1<=X[20])
 
 #min(p.NC(7),X(23));
-TmGPS2=@NLexpression(model,-(-NC[7]-X[23]+sqrt((-NC[7]+X[23])^2+alpha))/2)
+#TmGPS2=@NLexpression(model,-(-NC[7]-X[23]+sqrt((-NC[7]+X[23])^2+alpha))/2)
+@variable(model,TmGPS1>=0)
+@constraint(model,TmGPS1<=NC[7])
+@constraint(model,TmGPS1<=X[23])
 
 
 @constraint(model,  T[1]==MU[30]*X[30]) #TClient 
