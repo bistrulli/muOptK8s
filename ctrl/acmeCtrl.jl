@@ -153,9 +153,9 @@ MU[30]=1.0/1; #XBrowse_e;
 
 #min(p.NC(7),X(23));
 #TmGPS2=@NLexpression(model,-(-NC[7]-X[23]+sqrt((-NC[7]+X[23])^2+alpha))/2)
-@variable(model,TmGPS1>=0)
-@constraint(model,TmGPS1<=NC[7])
-@constraint(model,TmGPS1<=X[23])
+@variable(model,TmGPS2>=0)
+@constraint(model,TmGPS2<=NC[7])
+@constraint(model,TmGPS2<=X[23])
 
 
 @constraint(model,  T[1]==MU[30]*X[30]) #TClient 
