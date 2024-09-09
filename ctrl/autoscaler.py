@@ -310,7 +310,7 @@ class Autoscaler(object):
                         self.last_r = {}
                     for idx, ms in enumerate(ms_list2):
                         deployment_name = f"{ms}-deployment"
-                        new_replicas = np.ceil(float(replicas[idx]))
+                        new_replicas = np.round(float(replicas[idx]))
                         self.logger.info(f"Updating deployment {deployment_name} to {new_replicas} replicas")
                         if deployment_name not in self.last_r:
                             self.last_r[deployment_name] = new_replicas
