@@ -319,11 +319,13 @@ class Autoscaler(object):
                             if self.last_r[deployment_name] == new_replicas:
                                 self.logger.info(f"Not changing {deployment_name} replicas ({self.last_r[deployment_name]} replicas).")
                             if self.last_r[deployment_name] > new_replicas: # Downscaling
-                                new_replicas = max(1.0, new_replicas - 1)
+                                if (julia_replicas % 1) < 0.2:
+                                    new_replicas = max(1.0, new_replicas - 1)
                                 self.logger.info(f"Downscaling {deployment_name}: {self.last_r[deployment_name]}->{new_replicas} replicas.")
                                 self.horizontally_scale_deployment(deployment_name, new_replicas)
                             elif self.last_r[deployment_name] < new_replicas: # Upscaling
-                                new_replicas = max(1.0, new_replicas + 1)
+                                if (julia_replicas % 1) > 0.8:
+                                    new_replicas = max(1.0, new_replicas + 1)
                                 self.logger.info(f"Upscaling {deployment_name}: {self.last_r[deployment_name]}->{new_replicas} replicas.")
                                 self.horizontally_scale_deployment(deployment_name, new_replicas)
                             self.last_r[deployment_name] = new_replicas
