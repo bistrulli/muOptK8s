@@ -300,30 +300,31 @@ class Autoscaler(object):
                 for m in pubsub.listen():
                     if 'pmessage' != m['type']:
                         continue
-                    self.logger.info(m['data'])
+                    #self.logger.info(m['data'])
                     res_ctrl = m['data'].split("$")
                     ms_list = res_ctrl[0].split(";")
                     ms_list2 = [acmeair_replacement_dict[ms] for ms in ms_list]
                     replicas = res_ctrl[1].split(";")
-                    #replicas = m['data'].split("_")
                     if self.last_r is None:
                         self.last_r = {}
                     for idx, ms in enumerate(ms_list2):
                         deployment_name = f"{ms}-deployment"
-                        new_replicas = max(1.0, np.round(float(replicas[idx])))
-                        self.logger.info(f"Updating deployment {deployment_name} to {new_replicas} replicas")
-                        if deployment_name not in self.last_r:
+                        julia_replicas = float(replicas[idx])
+                        new_replicas = max(1.0, np.round(julia_replicas))
+                        self.logger.info(f"Calculate replicas for deployment {deployment_name}: {julia_replicas}")
+                        if deployment_name not in self.last_r: # First update
                             self.last_r[deployment_name] = new_replicas
                             self.horizontally_scale_deployment(deployment_name, new_replicas)
-                        else:
-                            if self.last_r[deployment_name] > new_replicas:
-                                self.logger.info(f"Downscaling {deployment_name} " + str(
-                                    self.last_r[deployment_name]) + f"->{new_replicas}")
+                        else: # All other updates
+                            if self.last_r[deployment_name] == new_replicas:
+                                self.logger.info(f"Not changing {deployment_name} replicas ({self.last_r[deployment_name]} replicas).")
+                            if self.last_r[deployment_name] > new_replicas: # Downscaling
+                                new_replicas = max(1.0, new_replicas - 1)
+                                self.logger.info(f"Downscaling {deployment_name}: {self.last_r[deployment_name]}->{new_replicas} replicas.")
                                 self.horizontally_scale_deployment(deployment_name, new_replicas)
-                            elif self.last_r[deployment_name] < new_replicas:
-                                self.logger.info(
-                                    f"Upscaling {deployment_name} " + str(
-                                        self.last_r[deployment_name]) + f"->{float(replicas[idx])}")
+                            elif self.last_r[deployment_name] < new_replicas: # Upscaling
+                                new_replicas = max(1.0, new_replicas + 1)
+                                self.logger.info(f"Upscaling {deployment_name}: {self.last_r[deployment_name]}->{new_replicas} replicas.")
                                 self.horizontally_scale_deployment(deployment_name, new_replicas)
                             self.last_r[deployment_name] = new_replicas
             except Exception as e:
