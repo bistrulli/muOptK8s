@@ -310,24 +310,21 @@ class Autoscaler(object):
                     for idx, ms in enumerate(ms_list2):
                         deployment_name = f"{ms}-deployment"
                         julia_replicas = float(replicas[idx])
-                        new_replicas = max(1.0, np.round(julia_replicas))
+                        decimal_value = julia_replicas % 1
+                        new_replicas = max(1.0, np.ceil(julia_replicas))
                         self.logger.info(f"Calculate replicas for deployment {deployment_name}: {julia_replicas}")
                         if deployment_name not in self.last_r: # First update
                             self.last_r[deployment_name] = new_replicas
-                            self.horizontally_scale_deployment(deployment_name, new_replicas)
+                            self.horizontally_scale_deployment(deployment_name, new_replicas, decimal_value)
                         else: # All other updates
                             if self.last_r[deployment_name] == new_replicas:
                                 self.logger.info(f"Not changing {deployment_name} replicas ({self.last_r[deployment_name]} replicas).")
                             if self.last_r[deployment_name] > new_replicas: # Downscaling
-                                if (julia_replicas % 1) < 0.2:
-                                    new_replicas = max(1.0, new_replicas - 1)
                                 self.logger.info(f"Downscaling {deployment_name}: {self.last_r[deployment_name]}->{new_replicas} replicas.")
-                                self.horizontally_scale_deployment(deployment_name, new_replicas)
+                                self.horizontally_scale_deployment(deployment_name, new_replicas, decimal_value)
                             elif self.last_r[deployment_name] < new_replicas: # Upscaling
-                                if (julia_replicas % 1) > 0.8:
-                                    new_replicas = max(1.0, new_replicas + 1)
                                 self.logger.info(f"Upscaling {deployment_name}: {self.last_r[deployment_name]}->{new_replicas} replicas.")
-                                self.horizontally_scale_deployment(deployment_name, new_replicas)
+                                self.horizontally_scale_deployment(deployment_name, new_replicas, decimal_value)
                             self.last_r[deployment_name] = new_replicas
             except Exception as e:
                 self.logger.error("main_loop failed with full error trace:")
@@ -396,7 +393,7 @@ class Autoscaler(object):
             else:
                 print(f"Failed to scale pod: {e}")
 
-    def horizontally_scale_deployment(self, deployment_name, replicas, namespace='default'):
+    def horizontally_scale_deployment(self, deployment_name, replicas, decimal_value=0.0, namespace='default'):
         """
         Scale a given tier to a provided target number of replicas.
 
@@ -411,6 +408,12 @@ class Autoscaler(object):
         self.apps_v1_api.patch_namespaced_deployment(name=deployment_name, namespace=namespace, body=deployment)
 
         self.logger.info(f"Deployment '{deployment_name}' scaled to {deployment.spec.replicas} replicas.")
+        if decimal_value >= 0.1:
+            self.logger.info(f"Setting one of the pods to {decimal_value} request.")
+            container_name = deployment_name.replace("deployment", "container")
+            pod_names = self.get_pod_names_by_deployment(deployment_name=deployment_name)
+            decimal_pod = pod_names[0]
+            self.vertically_scale_pod(self, decimal_pod, container_name, decimal_value, decimal_value, namespace='default'):
         return
 
     def get_cpu_str_by_vpa(self, vpa_name, namespace='default'):
