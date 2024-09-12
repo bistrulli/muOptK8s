@@ -251,6 +251,8 @@ class Autoscaler(object):
                 pod_name = pod.metadata.name
                 if deployment_name in pod_name:
                     pods.append(pod_name)
+            self.logger.info(f"Deployment {deployment_name}")
+            self.logger.info(pods)
             return pods
         except Exception as e:
             self.logger.error("get_pod_names_by_deployment failed with full error trace:")
