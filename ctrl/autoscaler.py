@@ -317,17 +317,22 @@ class Autoscaler(object):
                         self.logger.info(f"Calculate replicas for deployment {deployment_name}: {julia_replicas}")
                         if deployment_name not in self.last_r: # First update
                             self.last_r[deployment_name] = new_replicas
-                            self.horizontally_scale_deployment(deployment_name, new_replicas, decimal_value)
+                            # self.horizontally_scale_deployment(deployment_name, new_replicas, decimal_value)
                         else: # All other updates
-                            if self.last_r[deployment_name] == new_replicas:
-                                self.logger.info(f"Not changing {deployment_name} replicas ({self.last_r[deployment_name]} replicas).")
-                            if self.last_r[deployment_name] > new_replicas: # Downscaling
-                                self.logger.info(f"Downscaling {deployment_name}: {self.last_r[deployment_name]}->{new_replicas} replicas.")
-                                self.horizontally_scale_deployment(deployment_name, new_replicas, decimal_value)
-                            elif self.last_r[deployment_name] < new_replicas: # Upscaling
-                                self.logger.info(f"Upscaling {deployment_name}: {self.last_r[deployment_name]}->{new_replicas} replicas.")
-                                self.horizontally_scale_deployment(deployment_name, new_replicas, decimal_value)
                             self.last_r[deployment_name] = new_replicas
+                            #self.horizontally_scale_deployment(deployment_name, new_replicas, decimal_value)
+
+                            # if self.last_r[deployment_name] == new_replicas:
+                            #    self.logger.info(f"Not changing {deployment_name} replicas ({self.last_r[deployment_name]} replicas).")
+                            # if self.last_r[deployment_name] > new_replicas: # Downscaling
+                            #     self.logger.info(f"Downscaling {deployment_name}: {self.last_r[deployment_name]}->{new_replicas} replicas.")
+                            #     self.horizontally_scale_deployment(deployment_name, new_replicas, decimal_value)
+                            # elif self.last_r[deployment_name] < new_replicas: # Upscaling
+                            #     self.logger.info(f"Upscaling {deployment_name}: {self.last_r[deployment_name]}->{new_replicas} replicas.")
+                            #     self.horizontally_scale_deployment(deployment_name, new_replicas, decimal_value)
+                            
+
+                        self.horizontally_scale_deployment(deployment_name, new_replicas, decimal_value)
             except Exception as e:
                 self.logger.error("main_loop failed with full error trace:")
                 self.logger.error(e, exc_info=True)
@@ -385,7 +390,7 @@ class Autoscaler(object):
             }
         }
         try:
-            self.logger.info(f"Updating pod {pod_name} to CPU request {cpu_request} and CPU limit {cpu_limit}")
+            self.logger.info(f"Updating pod {pod_name} to CPU request {cpu_request} and CPU limit {cpu_limit}.")
             self.core_v1_api.patch_namespaced_pod(name=pod_name, namespace=namespace, body=patch_body)
         except ApiException as e:
             if e.status == 403:
@@ -409,9 +414,9 @@ class Autoscaler(object):
         deployment.spec.replicas = replicas
         self.apps_v1_api.patch_namespaced_deployment(name=deployment_name, namespace=namespace, body=deployment)
 
-        self.logger.info(f"Deployment '{deployment_name}' scaled to {deployment.spec.replicas} replicas.")
+        self.logger.info(f"Deployment '{deployment_name}': scaled to {deployment.spec.replicas} replicas.")
         if decimal_value >= 0.1:
-            self.logger.info(f"Setting one of the pods to {decimal_value} request.")
+            #self.logger.info(f"Deployment '{deployment_name}': setting one of the pods to {decimal_value} request.")
             container_name = deployment_name.replace("deployment", "container")
             pod_names = self.get_pod_names_by_deployment(deployment_name=deployment_name)
             decimal_pod = pod_names[0]
