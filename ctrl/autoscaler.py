@@ -415,7 +415,7 @@ class Autoscaler(object):
             container_name = deployment_name.replace("deployment", "container")
             pod_names = self.get_pod_names_by_deployment(deployment_name=deployment_name)
             decimal_pod = pod_names[0]
-            self.vertically_scale_pod(self, decimal_pod, container_name, decimal_value, decimal_value)
+            self.vertically_scale_pod(decimal_pod, container_name, decimal_value, decimal_value)
         return
 
     def get_cpu_str_by_vpa(self, vpa_name, namespace='default'):
