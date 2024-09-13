@@ -450,15 +450,14 @@ class Autoscaler(object):
                 self.logger.info(f"{deployment_name}: request value unchanged ({cpu_request})")
                 return
             else:                
-
-            container.resources.requests = {
-                'cpu': cpu_request,
-                'memory': "1Gi"
-            }
-            container.resources.limits = {
-                'cpu': cpu_request,
-                'memory': "1Gi"
-            }
+                container.resources.requests = {
+                    'cpu': cpu_request,
+                    'memory': "1Gi"
+                }
+                container.resources.limits = {
+                    'cpu': cpu_request,
+                    'memory': "1Gi"
+                }
 
         self.apps_v1_api.patch_namespaced_deployment(name=deployment_name, namespace=namespace, body=deployment)
 
