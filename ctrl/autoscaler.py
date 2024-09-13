@@ -25,14 +25,27 @@ acmeair_replacement_dict = {
 }
 
 
-acmeair_keywords = ["acmeair-main", "acmeair-auth",
+# acmeair_keywords = ["acmeair-main", "acmeair-auth",
+#                       "acmeair-customer-byidget", "acmeair-customer-byidpost", "acmeair-customer-updatemiles", "acmeair-customer-validateid",
+#                        "acmeair-booking-bookflights", "acmeair-booking-bybookingnumber", "acmeair-booking-byuser", "acmeair-booking-cancelbooking",
+#                        "acmeair-flight-getrewardmiles", "acmeair-flight-queryflights"]
+
+
+acmeair_keywords = ["acmeair-auth",
                        "acmeair-customer-byidget", "acmeair-customer-byidpost", "acmeair-customer-updatemiles", "acmeair-customer-validateid",
-                       "acmeair-booking-bookflights", "acmeair-booking-bybookingnumber", "acmeair-booking-byuser", "acmeair-booking-cancelbooking",
+                       "acmeair-booking-bookflights", "acmeair-booking-cancelbooking",
                        "acmeair-flight-getrewardmiles", "acmeair-flight-queryflights"]
-acmeair_vpas = ["vpa-main", "vpa-auth",
+
+
+# acmeair_vpas = ["vpa-main", "vpa-auth",
+#                 "vpa-byidget", "vpa-byidpost", "vpa-updatemiles", "vpa-validateid",
+#                 "vpa-bookflights", "vpa-bybookingnumber", "vpa-byuser", "vpa-cancelbooking",
+#                 "vpa-getrewardmiles", "vpa-queryflights"]
+
+acmeair_vpas = ["vpa-auth",
                 "vpa-byidget", "vpa-byidpost", "vpa-updatemiles", "vpa-validateid",
-                "vpa-bookflights", "vpa-bybookingnumber", "vpa-byuser", "vpa-cancelbooking",
-                "vpa-getrewardmiles", "vpa-queryflights"]
+                "vpa-bookflights", "vpa-cancelbooking",
+                "vpa-getrewardmiles", "vpa-queryflights"]                
 
 three_tier_keywords = ["spring-test-app-1", "spring-test-app-2", "spring-test-app-3"]
 three_tier_vpas = ["tier1-vpa", "tier2-vpa", "tier3-vpa"]
