@@ -458,11 +458,11 @@ class Autoscaler(object):
                 return
             else:                
                 container.resources.requests = {
-                    'cpu': cpu_request,
+                    'cpu': cpu_request_m,
                     'memory': "1Gi"
                 }
                 container.resources.limits = {
-                    'cpu': cpu_request,
+                    'cpu': cpu_request_m,
                     'memory': "1Gi"
                 }
 
