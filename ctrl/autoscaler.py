@@ -446,6 +446,9 @@ class Autoscaler(object):
 
         for container in deployment.spec.template.spec.containers:
             # If the value is the same, don't change it
+
+            self.logger.info(f"{deployment_name} ++ current request: {container.resources.requests} - New request: {cpu_request}")
+
             if container.resources.requests == cpu_request:
                 self.logger.info(f"{deployment_name}: request value unchanged ({cpu_request})")
                 return
