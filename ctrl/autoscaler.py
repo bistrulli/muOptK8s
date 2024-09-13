@@ -441,8 +441,16 @@ class Autoscaler(object):
         return
 
     def change_requests_deployment(self, deployment_name, cpu_request, namespace='default'):
+
         deployment = self.apps_v1_api.read_namespaced_deployment(name=deployment_name, namespace=namespace)
+
         for container in deployment.spec.template.spec.containers:
+            # If the value is the same, don't change it
+            if container.resources.requests == cpu_request:
+                self.logger.info(f"{deployment_name}: request value unchanged ({cpu_request})")
+                return
+            else:                
+
             container.resources.requests = {
                 'cpu': cpu_request,
                 'memory': "1Gi"
