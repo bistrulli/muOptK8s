@@ -313,7 +313,7 @@ class Autoscaler(object):
                         deployment_name = f"{ms}-deployment"
                         julia_replicas = float(replicas[idx])
                         decimal_value = julia_replicas % 1
-                        new_replicas = max(1.0, np.ceil(julia_replicas))
+                        new_replicas = np.floor(julia_replicas)
                         self.logger.info(f"Calculate replicas for deployment {deployment_name}: {julia_replicas}")
                         if deployment_name not in self.last_r: # First update
                             self.last_r[deployment_name] = new_replicas
@@ -408,20 +408,41 @@ class Autoscaler(object):
         :param replicas:    The target number of replicas for the given tier.
         :return:
         """
+        # First apply the decimal pod
+        self.logger.info(f"Deployment '{deployment_name}': setting one of the pods to {decimal_value} request.")
+        deployment_name_decimal = f"{deployment_name}-2"
+        self.change_requests_deployment(deployment_name=deployment_name_decimal, decimal_value)
+
+        # container_name = deployment_name.replace("deployment", "container")
+        # pod_names = self.get_pod_names_by_deployment(deployment_name=deployment_name)
+        # decimal_pod = pod_names[0]
+        # self.vertically_scale_pod(decimal_pod, container_name, decimal_value, decimal_value)
+
+        # Then horizontally scale the remaining pods
         deployment = self.apps_v1_api.read_namespaced_deployment(name=deployment_name, namespace=namespace)
 
         # Update and patch the deployment spec with desired replicas
         deployment.spec.replicas = replicas
         self.apps_v1_api.patch_namespaced_deployment(name=deployment_name, namespace=namespace, body=deployment)
-
         self.logger.info(f"Deployment '{deployment_name}': scaled to {deployment.spec.replicas} replicas.")
-        if decimal_value >= 0.1:
-            #self.logger.info(f"Deployment '{deployment_name}': setting one of the pods to {decimal_value} request.")
-            container_name = deployment_name.replace("deployment", "container")
-            pod_names = self.get_pod_names_by_deployment(deployment_name=deployment_name)
-            decimal_pod = pod_names[0]
-            self.vertically_scale_pod(decimal_pod, container_name, decimal_value, decimal_value)
         return
+
+    def change_requests_deployment(self, deployment_name, cpu_request, namespace='default'):
+        deployment = self.apps_v1_api.read_namespaced_deployment(name=deployment_name, namespace=namespace)
+        for container in deployment.spec.template.spec.containers:
+            container.resources.requests = {
+                'cpu': cpu_request,
+                'memory': "1Gi"
+            }
+            container.resources.limits = {
+                'cpu': cpu_request,
+                'memory': "1Gi"
+            }
+
+        apps_v1.patch_namespaced_deployment(name=deployment_name, namespace=namespace, body=deployment)
+
+
+
 
     def get_cpu_str_by_vpa(self, vpa_name, namespace='default'):
         """
