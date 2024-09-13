@@ -439,7 +439,7 @@ class Autoscaler(object):
                 'memory': "1Gi"
             }
 
-        apps_v1.patch_namespaced_deployment(name=deployment_name, namespace=namespace, body=deployment)
+        self.apps_v1_api.patch_namespaced_deployment(name=deployment_name, namespace=namespace, body=deployment)
 
 
 
