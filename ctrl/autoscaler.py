@@ -448,10 +448,12 @@ class Autoscaler(object):
             # If the value is the same, don't change it
 
             cpu_request_m = f"{int(cpu_request * 1000)}m"
+            requests = container.resources.requests
+            current_cpu_request_m = requests.get("cpu", "Not set")
 
-            self.logger.info(f"{deployment_name} ++ current request: {container.resources.requests.cpu} - New request: {cpu_request_m}")
+            self.logger.info(f"{deployment_name} ++ current request: {current_cpu_request_m} - New request: {cpu_request_m}")
 
-            if container.resources.requests.cpu == cpu_request_m:
+            if current_cpu_request_m == cpu_request_m:
                 self.logger.info(f"{deployment_name}: request value unchanged ({cpu_request})")
                 return
             else:                
