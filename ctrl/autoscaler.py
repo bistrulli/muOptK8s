@@ -411,7 +411,7 @@ class Autoscaler(object):
         # First apply the decimal pod
         self.logger.info(f"Deployment '{deployment_name}': setting one of the pods to {decimal_value} request.")
         deployment_name_decimal = f"{deployment_name}-2"
-        self.change_requests_deployment(deployment_name=deployment_name_decimal, decimal_value)
+        self.change_requests_deployment(deployment_name_decimal, decimal_value)
 
         # container_name = deployment_name.replace("deployment", "container")
         # pod_names = self.get_pod_names_by_deployment(deployment_name=deployment_name)
