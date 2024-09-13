@@ -447,7 +447,7 @@ class Autoscaler(object):
         for container in deployment.spec.template.spec.containers:
             # If the value is the same, don't change it
 
-            cpu_request_m = f"{int(cpu_request * 1000)+1}m"
+            cpu_request_m = f"{round(cpu_request * 1000)}m"
             requests = container.resources.requests
             current_cpu_request_m = requests.get("cpu", "Not set")
 
