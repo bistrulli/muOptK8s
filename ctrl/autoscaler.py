@@ -417,14 +417,22 @@ class Autoscaler(object):
         """
         Scale a given tier to a provided target number of replicas.
 
-        :param tier:        The tier to scale.
-        :param replicas:    The target number of replicas for the given tier.
+        :param deployment_name:         The name of the deployment to scale.
+        :param replicas:                The target number of replicas for the given deployment.
+        :param decimal_value:           The decimal value of the replicas calculated by muOpt.
         :return:
         """
+        # TODO Temporary fix:
+        julia_value = replicas + decimal_value
+
+        K = max(1, julia_value)
+        replicas_1 = floor(K) - 1   # The replicas for the deployment 1
+        requests_2 = K - replicas_1 # The CPU requests to set for the deployment 2
+
         # First apply the decimal pod
-        self.logger.info(f"Deployment '{deployment_name}': setting one of the pods to {decimal_value} request.")
+        self.logger.info(f"Deployment '{deployment_name}': setting one of the pods to {requests_2} request.")
         deployment_name_decimal = f"{deployment_name}-2"
-        self.change_requests_deployment(deployment_name_decimal, decimal_value)
+        self.change_requests_deployment(deployment_name_decimal, requests_2)
 
         # container_name = deployment_name.replace("deployment", "container")
         # pod_names = self.get_pod_names_by_deployment(deployment_name=deployment_name)
@@ -435,7 +443,7 @@ class Autoscaler(object):
         deployment = self.apps_v1_api.read_namespaced_deployment(name=deployment_name, namespace=namespace)
 
         # Update and patch the deployment spec with desired replicas
-        deployment.spec.replicas = replicas
+        deployment.spec.replicas = replicas_1
         self.apps_v1_api.patch_namespaced_deployment(name=deployment_name, namespace=namespace, body=deployment)
         self.logger.info(f"Deployment '{deployment_name}': scaled to {deployment.spec.replicas} replicas.")
         return
@@ -451,10 +459,10 @@ class Autoscaler(object):
             requests = container.resources.requests
             current_cpu_request_m = requests.get("cpu", "Not set")
 
-            self.logger.info(f"{deployment_name} ++ current request: {current_cpu_request_m} - New request: {cpu_request_m}")
+            self.logger.info(f"Changing request of {deployment_name} from {current_cpu_request_m} to {cpu_request_m}")
 
             if current_cpu_request_m == cpu_request_m:
-                self.logger.info(f"{deployment_name}: request value unchanged ({cpu_request})")
+                self.logger.info(f"{deployment_name}: no change required ({cpu_request})")
                 return
             else:                
                 container.resources.requests = {
@@ -465,8 +473,7 @@ class Autoscaler(object):
                     'cpu': cpu_request_m,
                     'memory': "1Gi"
                 }
-
-        self.apps_v1_api.patch_namespaced_deployment(name=deployment_name, namespace=namespace, body=deployment)
+                self.apps_v1_api.patch_namespaced_deployment(name=deployment_name, namespace=namespace, body=deployment)
 
 
 
