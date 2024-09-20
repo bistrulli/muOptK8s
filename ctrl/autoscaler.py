@@ -326,7 +326,7 @@ class Autoscaler(object):
                         deployment_name = f"{ms}-deployment"
                         julia_replicas = float(replicas[idx])
                         decimal_value = julia_replicas % 1
-                        new_replicas = np.round(julia_replicas) # TODO fix in floor for method 1
+                        new_replicas = max(1, np.round(julia_replicas)) # TODO fix in floor for method 1
                         self.logger.info(f"Calculate replicas for deployment {deployment_name}: {julia_replicas}")
                         if deployment_name not in self.last_r: # First update
                             self.last_r[deployment_name] = new_replicas
