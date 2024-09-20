@@ -326,7 +326,7 @@ class Autoscaler(object):
                         deployment_name = f"{ms}-deployment"
                         julia_replicas = float(replicas[idx])
                         decimal_value = julia_replicas % 1
-                        new_replicas = np.floor(julia_replicas)
+                        new_replicas = np.round(julia_replicas) # TODO fix in floor for method 1
                         self.logger.info(f"Calculate replicas for deployment {deployment_name}: {julia_replicas}")
                         if deployment_name not in self.last_r: # First update
                             self.last_r[deployment_name] = new_replicas
@@ -345,7 +345,7 @@ class Autoscaler(object):
                             #     self.horizontally_scale_deployment(deployment_name, new_replicas, decimal_value)
                             
 
-                        self.horizontally_scale_deployment(deployment_name, new_replicas, decimal_value)
+                        self.horizontally_scale_deployment(deployment_name, new_replicas, decimal_value, method=0)
             except Exception as e:
                 self.logger.error("main_loop failed with full error trace:")
                 self.logger.error(e, exc_info=True)
@@ -413,7 +413,7 @@ class Autoscaler(object):
             else:
                 print(f"Failed to scale pod: {e}")
 
-    def horizontally_scale_deployment(self, deployment_name, replicas, decimal_value=0.0, namespace='default'):
+    def horizontally_scale_deployment(self, deployment_name, replicas, decimal_value=0.0, method=0, namespace='default'):
         """
         Scale a given tier to a provided target number of replicas.
 
@@ -422,17 +422,21 @@ class Autoscaler(object):
         :param decimal_value:           The decimal value of the replicas calculated by muOpt.
         :return:
         """
-        # TODO Temporary fix:
-        julia_value = replicas + decimal_value
 
-        K = max(1, julia_value)
-        replicas_1 = np.floor(K) - 1   # The replicas for the deployment 1
-        requests_2 = K - replicas_1 # The CPU requests to set for the deployment 2
+        if method == 1:
+            # TODO Temporary fix:
+            julia_value = replicas + decimal_value
 
-        # First apply the decimal pod
-        self.logger.info(f"Deployment '{deployment_name}': setting one of the pods to {requests_2} request.")
-        deployment_name_decimal = f"{deployment_name}-2"
-        self.change_requests_deployment(deployment_name_decimal, requests_2)
+            K = max(1, julia_value)
+            replicas_1 = np.floor(K) - 1   # The replicas for the deployment 1
+            requests_2 = K - replicas_1 # The CPU requests to set for the deployment 2
+
+            # First apply the decimal pod
+            self.logger.info(f"Deployment '{deployment_name}': setting one of the pods to {requests_2} request.")
+            deployment_name_decimal = f"{deployment_name}-2"
+            self.change_requests_deployment(deployment_name_decimal, requests_2)
+        else: # method == 0
+            replicas_1 = replicas
 
         # container_name = deployment_name.replace("deployment", "container")
         # pod_names = self.get_pod_names_by_deployment(deployment_name=deployment_name)
