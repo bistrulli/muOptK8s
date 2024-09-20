@@ -426,7 +426,7 @@ class Autoscaler(object):
         julia_value = replicas + decimal_value
 
         K = max(1, julia_value)
-        replicas_1 = floor(K) - 1   # The replicas for the deployment 1
+        replicas_1 = np.floor(K) - 1   # The replicas for the deployment 1
         requests_2 = K - replicas_1 # The CPU requests to set for the deployment 2
 
         # First apply the decimal pod
