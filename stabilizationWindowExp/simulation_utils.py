@@ -55,6 +55,17 @@ def data_logger(env: simpy.Environment, application_server: 'ApplicationServer',
     while True:
         yield env.timeout(1.0)  # Log every second
         
+        # Check if the controller is adaptive to log the dynamic window
+        if hasattr(hpa_controller, 'adaptive_downscale_window'):
+            current_downscale_window = hpa_controller.adaptive_downscale_window
+        else:
+            current_downscale_window = hpa_controller.downscale_stabilization_window
+
+        # Check if the controller is adaptive to log the adaptation error
+        current_adaptation_error = 0.0
+        if hasattr(hpa_controller, 'last_adaptation_error'):
+            current_adaptation_error = hpa_controller.last_adaptation_error
+
         log_entry = {
             'timestamp': env.now,
             'user_count': workload_generator.user_count,
@@ -64,9 +75,69 @@ def data_logger(env: simpy.Environment, application_server: 'ApplicationServer',
             'response_time': application_server.get_avg_response_time(),
             'throughput': application_server.get_throughput(10.0),  # Last 10 seconds
             'cumulative_requests': len(application_server.completed_requests),
-            'queue_length': len(application_server.cpu_resource.queue)
+            'queue_length': len(application_server.cpu_resource.queue),
+            'downscale_window': current_downscale_window,
+            'adaptation_error': current_adaptation_error
         }
         log_data.append(log_entry)
+
+
+def solve_with_line_mm_c(num_users: int, servers: int, service_time_mean: float, think_time_mean: float):
+    """
+    Solve an equivalent closed M/M/c model using LINE solver (if available).
+    Returns dict with throughput, response_time, q_len, busy_cores.
+    """
+    # This function requires the LINE solver to be available on the system
+    # We re-import it here to keep dependencies clear
+    try:
+        from line_solver import Network, Delay, Queue, Sink, OpenClass, ClosedClass, SchedStrategy
+        from line_solver import SolverMVA, Network as LineNetwork
+        from line_solver import Exp as LineExp
+        LINE_AVAILABLE = True
+    except Exception:
+        LINE_AVAILABLE = False
+
+    if not LINE_AVAILABLE:
+        raise RuntimeError("LINE solver not available on this system")
+
+    # LINE expects rates (lambda=1/mean)
+    mu_service = 1.0 / max(service_time_mean, 1e-9)
+    mu_think = 1.0 / max(think_time_mean, 1e-9)
+
+    model = LineNetwork("Closed M/M/c")
+    # Nodes
+    think = Delay(model, 'Think')
+    queue = Queue(model, 'App', SchedStrategy.FCFS)
+    queue.setNumberOfServers(servers)
+    sink = Sink(model, 'Sink')  # not used but ok
+
+    # Closed class with N users, reference station is think node
+    cclass = ClosedClass(model, 'Users', num_users, think)
+
+    # Services
+    think.setService(cclass, LineExp(mu_think))
+    queue.setService(cclass, LineExp(mu_service))
+
+    # Topology: Think -> App -> Think (closed loop)
+    model.link(LineNetwork.serialRouting(think, queue, think))
+
+    # Use MVA (analytical for closed networks)
+    table = SolverMVA(model).getAvgTable()
+
+    # Extract metrics for queue station
+    app_rows = table[table['Station'].astype(str).str.contains('App')]
+    tput = app_rows['Tput'].astype(float).sum()
+    resp_t = app_rows['RespT'].astype(float).mean()
+    q_len = app_rows['QLen'].astype(float).sum()
+    util = app_rows['Util'].astype(float).sum()
+    busy_cores = min(servers, util * servers)
+
+    return {
+        'throughput': float(tput),
+        'response_time': float(resp_t),
+        'q_len': float(q_len),
+        'busy_cores': float(busy_cores)
+    }
 
 
 def plot_results(log_data: List[Dict[str, Any]], target_utilization: float) -> None:

@@ -172,3 +172,134 @@ class HPAController:
         
         # Clear pending scaling
         self.pending_scaling = None
+
+
+class AdaptiveHPAController(HPAController):
+    """
+    An HPAController that dynamically adjusts its downscale stabilization window
+    based on a comparison between measured throughput and a theoretical model.
+    """
+    def __init__(self, env: simpy.Environment, application_server: 'ApplicationServer',
+                 target_utilization: float, evaluation_interval: float,
+                 upscale_stabilization_window: float,
+                 # Simulation parameters needed for the model
+                 service_time_mean: float,
+                 think_time_mean: float,
+                 log_data: list, # Shared log data for calculating averages
+                 # Initial window, min/max bounds, and adaptation parameters
+                 initial_downscale_window: float,
+                 min_downscale_window: float = 0.0,
+                 max_downscale_window: float = 600.0,
+                 adaptation_interval: float = 180.0,
+                 kp: float = 50.0, # Proportional gain
+                 ki: float = 1.0,  # Integral gain
+                 # Standard HPA params
+                 min_replicas: int = 1,
+                 max_replicas: Optional[int] = None,
+                 tolerance: float = 0.1,
+                 utilization_window: float = 60.0):
+        
+        # Initialize the base HPA controller
+        super().__init__(
+            env, application_server, target_utilization, evaluation_interval,
+            upscale_stabilization_window, initial_downscale_window,
+            min_replicas, max_replicas, tolerance, utilization_window
+        )
+        
+        # Parameters for the adaptation logic
+        self.service_time_mean = service_time_mean
+        self.think_time_mean = think_time_mean
+        self.log_data = log_data
+        self.min_downscale_window = min_downscale_window
+        self.max_downscale_window = max_downscale_window
+        self.adaptation_interval = adaptation_interval
+        self.kp = kp # Proportional gain
+        self.ki = ki # Integral gain
+        self.integral_error = 0.0 # Accumulator for the integral term
+        self.last_adaptation_error = 0.0 # For logging
+        
+        # Store for historical data needed for averages
+        self.history = deque()
+        self.env.process(self.run_adapter())
+
+    @property
+    def adaptive_downscale_window(self) -> float:
+        """Provide access to the current, dynamic window size."""
+        return self.downscale_stabilization_window
+
+    def run_adapter(self):
+        """Periodically runs the adaptation logic for the stabilization window."""
+        from simulation_utils import solve_with_line_mm_c
+        
+        # Initial delay to gather some data before the first adjustment
+        yield self.env.timeout(self.adaptation_interval)
+        
+        while True:
+            # 1. Collect data from the last `adaptation_interval` seconds
+            now = self.env.now
+            cutoff = now - self.adaptation_interval
+            
+            # Use the shared log_data to get a view of the last interval
+            # This is more accurate than instantaneous measurements
+            recent_history = [log for log in self.log_data if log['timestamp'] >= cutoff]
+            if not recent_history:
+                yield self.env.timeout(self.adaptation_interval)
+                continue
+
+            # 2. Calculate measured throughput and average users/replicas from historical data
+            completions_in_interval = self.application_server.get_throughput(self.adaptation_interval) * self.adaptation_interval
+            measured_throughput = completions_in_interval / self.adaptation_interval
+            
+            avg_users = sum(log['user_count'] for log in recent_history) / len(recent_history)
+            avg_replicas = sum(log['current_replicas'] for log in recent_history) / len(recent_history)
+
+            # 3. Calculate theoretical throughput using the LINE model
+            try:
+                theoretical_results = solve_with_line_mm_c(
+                    num_users=int(round(avg_users)),
+                    servers=int(round(avg_replicas * self.application_server.cpus_per_replica)),
+                    service_time_mean=self.service_time_mean,
+                    think_time_mean=self.think_time_mean
+                )
+                theoretical_throughput = theoretical_results['throughput']
+            except Exception as e:
+                print(f"[{now:.1f}s] ADAPTER: Could not calculate theoretical model: {e}")
+                yield self.env.timeout(self.adaptation_interval)
+                continue
+
+            # 4. Calculate percentage error and adjust the window using PI control
+            if theoretical_throughput > 0:
+                error = (theoretical_throughput - measured_throughput) / theoretical_throughput
+            else:
+                error = 0.0 # Or handle as a special case where no adaptation is possible
+            
+            # Update integral term with anti-windup.
+            # Only accumulate error if the window is not already at a boundary
+            # that the controller is trying to push against.
+            if (error > 0 and self.downscale_stabilization_window < self.max_downscale_window) or \
+               (error < 0 and self.downscale_stabilization_window > self.min_downscale_window):
+                self.integral_error += error * self.adaptation_interval
+
+            self.last_adaptation_error = error # Store for logging
+            
+            proportional_term = self.kp * error
+            integral_term = self.ki * self.integral_error
+            adjustment = proportional_term + integral_term
+            
+            old_window = self.downscale_stabilization_window
+            new_window = old_window + adjustment
+            
+            # Clamp the new window value to be within min/max bounds
+            new_window_clamped = max(self.min_downscale_window, min(new_window, self.max_downscale_window))
+            
+            # Reset integral error if the window is clamped to prevent wind-up
+            if new_window != new_window_clamped:
+                self.integral_error = 0
+
+            self.downscale_stabilization_window = new_window_clamped
+            
+            print(f"[{now:.1f}s] ADAPTER: T_th={theoretical_throughput:.2f}, T_m={measured_throughput:.2f}, "
+                  f"Err={error:.2%}, P_term={proportional_term:.2f}, I_term={integral_term:.2f}, "
+                  f"Old_Win={old_window:.1f}s, New_Win={self.downscale_stabilization_window:.1f}s")
+            
+            yield self.env.timeout(self.adaptation_interval)

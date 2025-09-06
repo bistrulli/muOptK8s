@@ -214,57 +214,6 @@ def user_behavior(env: simpy.Environment, app_server: ApplicationServer,
         print(f"[{env.now:.1f}s] User {user_id} was removed from the simulation.")
 
 
-def solve_with_line_mm_c(num_users: int, servers: int, service_time_mean: float, think_time_mean: float):
-    """
-    Solve an equivalent closed M/M/c model using LINE solver (if available).
-    Returns dict with throughput, response_time, q_len, busy_cores.
-    """
-    if not LINE_AVAILABLE:
-        raise RuntimeError("LINE solver not available on this system")
-
-    # LINE expects rates (lambda=1/mean)
-    mu_service = 1.0 / max(service_time_mean, 1e-9)
-    mu_think = 1.0 / max(think_time_mean, 1e-9)
-
-    model = LineNetwork("Closed M/M/c")
-    # Nodes
-    think = Delay(model, 'Think')
-    queue = Queue(model, 'App', SchedStrategy.FCFS)
-    queue.setNumberOfServers(servers)
-    sink = Sink(model, 'Sink')  # not used but ok
-
-    # Closed class with N users, reference station is think node
-    cclass = ClosedClass(model, 'Users', num_users, think)
-
-    # Services
-    think.setService(cclass, LineExp(mu_think))
-    queue.setService(cclass, LineExp(mu_service))
-
-    # Topology: Think -> App -> Think (closed loop)
-    model.link(LineNetwork.serialRouting(think, queue, think))
-
-    # Use MVA (analytical for closed networks)
-    table = SolverMVA(model).getAvgTable()
-
-    # Extract metrics for queue station
-    # Columns include: QLen, Util, Tput, RespT, etc.
-    import pandas as pd
-    app_rows = table[table['Station'].astype(str).str.contains('App')]
-    # Throughput of class Users (system throughput)
-    tput = app_rows['Tput'].astype(float).sum()
-    resp_t = app_rows['RespT'].astype(float).mean()
-    q_len = app_rows['QLen'].astype(float).sum()
-    util = app_rows['Util'].astype(float).sum()  # fraction across c servers
-    busy_cores = min(servers, util * servers)  # absolute busy cores
-
-    return {
-        'throughput': float(tput),
-        'response_time': float(resp_t),
-        'q_len': float(q_len),
-        'busy_cores': float(busy_cores)
-    }
-
-
 def stress_test_application(num_users: int = 50, simulation_duration: float = 300.0,
                           initial_replicas: int = 3, cpus_per_replica: int = 2,
                           service_time_mean: float = 0.1, think_time_mean: float = 3.0):
@@ -387,6 +336,7 @@ def stress_test_application(num_users: int = 50, simulation_duration: float = 30
         print("\n" + "-" * 60)
         print("ANALYTICAL COMPARISON (LINE: M/M/c CLOSED)")
         print("-" * 60)
+        from simulation_utils import solve_with_line_mm_c
         line_results = solve_with_line_mm_c(
             num_users=num_users,
             servers=initial_replicas * cpus_per_replica,
@@ -450,6 +400,7 @@ if __name__ == "__main__":
 
         # Analytical LINE comparison for this scenario
         try:
+            from simulation_utils import solve_with_line_mm_c
             line_res = solve_with_line_mm_c(
                 num_users=scenario['num_users'],
                 servers=scenario['replicas'] * scenario['cpus_per_replica'],
